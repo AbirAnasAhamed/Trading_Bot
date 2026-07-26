@@ -10,7 +10,8 @@ const cn = (...inputs: (string | undefined | null | false)[]) => {
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'My Bots', path: '/bots', icon: Bot },
+  { name: 'Bot Laboratory', path: '/bots', icon: Bot },
+  { name: 'HFTrading Bot', path: '/hf-trading', icon: TrendingUp },
   { name: 'Trade History', path: '/history', icon: History },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];

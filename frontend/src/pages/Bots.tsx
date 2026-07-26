@@ -11,7 +11,7 @@ export const Bots: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-primary">My Bots</h1>
+        <h1 className="text-2xl font-bold text-primary">Bot Laboratory</h1>
         <button className="flex items-center px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-blue-600 transition-colors">
           <Plus className="w-5 h-5 mr-2" />
           Create New Bot
