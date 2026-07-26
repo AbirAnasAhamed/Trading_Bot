@@ -1,14 +1,18 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
 import json
+import logging
 from app.services.ccxt_manager import CCXTManager
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 router = APIRouter()
 
 @router.websocket("/chart-stream")
 async def chart_stream(websocket: WebSocket):
     await websocket.accept()
-    current_task = None
+    tasks = {} # Store tasks by stream type to allow concurrent streams
 
     try:
         while True:
@@ -31,7 +35,7 @@ async def chart_stream(websocket: WebSocket):
                 exchange_id = message.get("exchange")
                 if exchange_id:
                     try:
-                        print(f"[WebSocket] Fetching markets for exchange: {exchange_id}")
+                        logger.info(f"[WebSocket] Fetching markets for exchange: {exchange_id}")
                         ex = await CCXTManager.get_exchange(exchange_id)
                         await ex.load_markets()
                         symbols = list(ex.symbols)
@@ -41,7 +45,7 @@ async def chart_stream(websocket: WebSocket):
                             "data": symbols
                         })
                     except Exception as e:
-                        print(f"[WebSocket] Error fetching markets: {e}")
+                        logger.error(f"[WebSocket] Error fetching markets: {e}")
                         await websocket.send_json({
                             "action": "error",
                             "message": str(e)
@@ -52,10 +56,10 @@ async def chart_stream(websocket: WebSocket):
                 symbol = message.get("symbol")
                 timeframe = message.get("timeframe")
 
-                print(f"[WebSocket] Asset Pair Changed -> Exchange: {exchange_id}, Symbol: {symbol}, Timeframe: {timeframe}")
+                logger.info(f"[WebSocket] Asset Pair Changed (OHLCV) -> Exchange: {exchange_id}, Symbol: {symbol}, Timeframe: {timeframe}")
 
-                if current_task:
-                    current_task.cancel()
+                if "ohlcv" in tasks and tasks["ohlcv"]:
+                    tasks["ohlcv"].cancel()
 
                 async def stream_ohlcv():
                     try:
@@ -69,7 +73,7 @@ async def chart_stream(websocket: WebSocket):
                             "timeframe": timeframe,
                             "data": historical
                         })
-                        print(f"[WebSocket] Sent {len(historical)} historical candles for {symbol}")
+                        logger.info(f"[WebSocket] Sent {len(historical)} historical candles for {symbol}")
 
                         while True:
                             live_candle = await ex.watch_ohlcv(symbol, timeframe)
@@ -80,18 +84,57 @@ async def chart_stream(websocket: WebSocket):
                                 "timeframe": timeframe,
                                 "data": live_candle
                             })
-                            # print(f"[WebSocket] Live candle update for {symbol}")
                     except asyncio.CancelledError:
-                        print(f"[WebSocket] Stopped watching {symbol}")
+                        logger.info(f"[WebSocket] Stopped watching OHLCV for {symbol}")
                     except Exception as e:
-                        print(f"[WebSocket] Error watching {symbol}: {e}")
+                        logger.error(f"[WebSocket] Error watching OHLCV for {symbol}: {e}")
                         await websocket.send_json({
                             "action": "error",
-                            "message": str(e)
+                            "message": f"OHLCV Error: {str(e)}"
                         })
 
-                current_task = asyncio.create_task(stream_ohlcv())
+                tasks["ohlcv"] = asyncio.create_task(stream_ohlcv())
+
+            elif action == "watch_orderbook":
+                exchange_id = message.get("exchange")
+                symbol = message.get("symbol")
+                
+                logger.info(f"[WebSocket] Asset Pair Changed (Orderbook) -> Exchange: {exchange_id}, Symbol: {symbol}")
+
+                if "orderbook" in tasks and tasks["orderbook"]:
+                    tasks["orderbook"].cancel()
+
+                async def stream_orderbook():
+                    try:
+                        ex = await CCXTManager.get_exchange(exchange_id)
+                        while True:
+                            # Use watch_order_book for real-time L2 stream. Limit to 50 for RAM optimization
+                            orderbook = await ex.watch_order_book(symbol, limit=50)
+                            
+                            # Trim data to strictly top 50 to ensure low memory footprint on client
+                            trimmed_ob = {
+                                "bids": orderbook.get("bids", [])[:50],
+                                "asks": orderbook.get("asks", [])[:50],
+                            }
+                            
+                            await websocket.send_json({
+                                "action": "live_orderbook",
+                                "exchange": exchange_id,
+                                "symbol": symbol,
+                                "data": trimmed_ob
+                            })
+                    except asyncio.CancelledError:
+                        logger.info(f"[WebSocket] Stopped watching Orderbook for {symbol}")
+                    except Exception as e:
+                        logger.error(f"[WebSocket] Error watching Orderbook for {symbol}: {e}")
+                        await websocket.send_json({
+                            "action": "error",
+                            "message": f"Orderbook Error: {str(e)}"
+                        })
+
+                tasks["orderbook"] = asyncio.create_task(stream_orderbook())
 
     except WebSocketDisconnect:
-        if current_task:
-            current_task.cancel()
+        for t in tasks.values():
+            if t:
+                t.cancel()

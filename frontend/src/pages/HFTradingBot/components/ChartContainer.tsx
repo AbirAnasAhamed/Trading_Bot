@@ -1,16 +1,27 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, CandlestickSeries } from 'lightweight-charts';
-import type { IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
+import type { IChartApi, ISeriesApi, CandlestickData, IPriceLine } from 'lightweight-charts';
 
 interface ChartContainerProps {
   historicalData: CandlestickData[];
   liveCandle: CandlestickData | null;
+  orderbookData?: { bids: number[][]; asks: number[][] };
+  wallThreshold?: number;
 }
 
-export const ChartContainer: React.FC<ChartContainerProps> = ({ historicalData, liveCandle }) => {
+export const ChartContainer: React.FC<ChartContainerProps> = ({ 
+  historicalData, 
+  liveCandle, 
+  orderbookData,
+  wallThreshold = 500
+}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  
+  // References for wall price lines to update them efficiently
+  const buyWallLineRef = useRef<IPriceLine | null>(null);
+  const sellWallLineRef = useRef<IPriceLine | null>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -103,6 +114,75 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({ historicalData, 
       seriesRef.current.update(liveCandle);
     }
   }, [liveCandle]);
+
+  // Handle Orderbook Buy/Sell Walls overlay
+  useEffect(() => {
+    if (!seriesRef.current || !orderbookData) return;
+    
+    const { bids, asks } = orderbookData;
+    
+    // Find Buy Wall (max volume in bids)
+    let maxBidVolume = 0;
+    let buyWallPrice = 0;
+    bids.forEach(([price, vol]) => {
+      if (vol > maxBidVolume) {
+        maxBidVolume = vol;
+        buyWallPrice = price;
+      }
+    });
+
+    // Find Sell Wall (max volume in asks)
+    let maxAskVolume = 0;
+    let sellWallPrice = 0;
+    asks.forEach(([price, vol]) => {
+      if (vol > maxAskVolume) {
+        maxAskVolume = vol;
+        sellWallPrice = price;
+      }
+    });
+
+    // Handle Buy Wall Line
+    if (maxBidVolume >= wallThreshold && buyWallPrice > 0) {
+      const buyOptions = {
+        price: buyWallPrice,
+        color: '#22c55e',
+        lineWidth: 2 as const,
+        lineStyle: 0 as const, // Solid line
+        axisLabelVisible: true,
+        title: `Buy Wall (${maxBidVolume > 1000 ? (maxBidVolume/1000).toFixed(1) + 'k' : maxBidVolume.toFixed(2)})`,
+      };
+
+      if (!buyWallLineRef.current) {
+        buyWallLineRef.current = seriesRef.current.createPriceLine(buyOptions);
+      } else {
+        buyWallLineRef.current.applyOptions(buyOptions);
+      }
+    } else if (buyWallLineRef.current) {
+      seriesRef.current.removePriceLine(buyWallLineRef.current);
+      buyWallLineRef.current = null;
+    }
+
+    // Handle Sell Wall Line
+    if (maxAskVolume >= wallThreshold && sellWallPrice > 0) {
+      const sellOptions = {
+        price: sellWallPrice,
+        color: '#ef4444',
+        lineWidth: 2 as const,
+        lineStyle: 0 as const, // Solid line
+        axisLabelVisible: true,
+        title: `Sell Wall (${maxAskVolume > 1000 ? (maxAskVolume/1000).toFixed(1) + 'k' : maxAskVolume.toFixed(2)})`,
+      };
+
+      if (!sellWallLineRef.current) {
+        sellWallLineRef.current = seriesRef.current.createPriceLine(sellOptions);
+      } else {
+        sellWallLineRef.current.applyOptions(sellOptions);
+      }
+    } else if (sellWallLineRef.current) {
+      seriesRef.current.removePriceLine(sellWallLineRef.current);
+      sellWallLineRef.current = null;
+    }
+  }, [orderbookData, wallThreshold]);
 
   return <div ref={chartContainerRef} className="w-full h-full min-h-[500px]" />;
 };

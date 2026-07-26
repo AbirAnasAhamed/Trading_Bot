@@ -19,6 +19,9 @@ export const useChartWebSocket = () => {
   const [markets, setMarkets] = useState<string[]>([]);
   const [historicalData, setHistoricalData] = useState<CandlestickData[]>([]);
   const [liveCandle, setLiveCandle] = useState<CandlestickData | null>(null);
+  const [orderbookData, setOrderbookData] = useState<{bids: number[][], asks: number[][]}>({bids: [], asks: []});
+  
+  const lastObUpdate = useRef<number>(0);
 
   useEffect(() => {
     // Connect to WebSocket
@@ -72,6 +75,14 @@ export const useChartWebSocket = () => {
                 }
             }
             break;
+          case 'live_orderbook':
+            const now = Date.now();
+            // Throttle updates to max 4 per second (250ms) to save RAM and CPU
+            if (now - lastObUpdate.current > 250) {
+              setOrderbookData(msg.data);
+              lastObUpdate.current = now;
+            }
+            break;
           case 'error':
             console.error("WS Error:", msg.message);
             break;
@@ -111,13 +122,19 @@ export const useChartWebSocket = () => {
     sendMessage({ action: 'watch_ohlcv', exchange, symbol, timeframe });
   }, [sendMessage]);
 
+  const watchOrderbook = useCallback((exchange: string, symbol: string) => {
+    sendMessage({ action: 'watch_orderbook', exchange, symbol });
+  }, [sendMessage]);
+
   return {
     isConnected,
     exchanges,
     markets,
     historicalData,
     liveCandle,
+    orderbookData,
     fetchMarkets,
     watchOhlcv,
+    watchOrderbook,
   };
 };
