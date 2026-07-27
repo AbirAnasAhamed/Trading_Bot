@@ -7,21 +7,33 @@ interface ChartContainerProps {
   liveCandle: CandlestickData | null;
   orderbookData?: { bids: number[][]; asks: number[][] };
   wallThreshold?: number;
+  volumeType?: 'base' | 'quote';
 }
+
+// Utility to format large volumes nicely
+const formatVolume = (vol: number) => {
+  if (vol >= 1000000) {
+    return (vol / 1000000).toFixed(1) + 'M';
+  }
+  if (vol >= 1000) {
+    return (vol / 1000).toFixed(1) + 'k';
+  }
+  return vol.toFixed(2);
+};
 
 export const ChartContainer: React.FC<ChartContainerProps> = ({ 
   historicalData, 
   liveCandle, 
   orderbookData,
-  wallThreshold = 500
+  wallThreshold = 500,
+  volumeType = 'base'
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   
-  // References for wall price lines to update them efficiently
-  const buyWallLineRef = useRef<IPriceLine | null>(null);
-  const sellWallLineRef = useRef<IPriceLine | null>(null);
+  // Reference map for all active wall price lines to update/remove them efficiently
+  const wallLinesRef = useRef<Map<number, IPriceLine>>(new Map());
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -120,69 +132,68 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     if (!seriesRef.current || !orderbookData) return;
     
     const { bids, asks } = orderbookData;
+    const activeWallPrices = new Set<number>();
     
-    // Find Buy Wall (max volume in bids)
-    let maxBidVolume = 0;
-    let buyWallPrice = 0;
+    // Process Bids (Buy Walls)
     bids.forEach(([price, vol]) => {
-      if (vol > maxBidVolume) {
-        maxBidVolume = vol;
-        buyWallPrice = price;
+      const calculatedVolume = volumeType === 'quote' ? vol * price : vol;
+      if (calculatedVolume >= wallThreshold && price > 0) {
+        activeWallPrices.add(price);
+        
+        const buyOptions = {
+          price: price,
+          color: '#22c55e',
+          lineWidth: 1 as const,
+          lineStyle: 0 as const, // Solid line
+          axisLabelVisible: true,
+          title: `Buy Wall (${formatVolume(calculatedVolume)})`,
+        };
+
+        if (wallLinesRef.current.has(price)) {
+          // Update existing line
+          wallLinesRef.current.get(price)?.applyOptions(buyOptions);
+        } else {
+          // Create new line
+          const line = seriesRef.current!.createPriceLine(buyOptions);
+          wallLinesRef.current.set(price, line);
+        }
       }
     });
 
-    // Find Sell Wall (max volume in asks)
-    let maxAskVolume = 0;
-    let sellWallPrice = 0;
+    // Process Asks (Sell Walls)
     asks.forEach(([price, vol]) => {
-      if (vol > maxAskVolume) {
-        maxAskVolume = vol;
-        sellWallPrice = price;
+      const calculatedVolume = volumeType === 'quote' ? vol * price : vol;
+      if (calculatedVolume >= wallThreshold && price > 0) {
+        activeWallPrices.add(price);
+        
+        const sellOptions = {
+          price: price,
+          color: '#ef4444',
+          lineWidth: 1 as const,
+          lineStyle: 0 as const, // Solid line
+          axisLabelVisible: true,
+          title: `Sell Wall (${formatVolume(calculatedVolume)})`,
+        };
+
+        if (wallLinesRef.current.has(price)) {
+          // Update existing line
+          wallLinesRef.current.get(price)?.applyOptions(sellOptions);
+        } else {
+          // Create new line
+          const line = seriesRef.current!.createPriceLine(sellOptions);
+          wallLinesRef.current.set(price, line);
+        }
       }
     });
 
-    // Handle Buy Wall Line
-    if (maxBidVolume >= wallThreshold && buyWallPrice > 0) {
-      const buyOptions = {
-        price: buyWallPrice,
-        color: '#22c55e',
-        lineWidth: 2 as const,
-        lineStyle: 0 as const, // Solid line
-        axisLabelVisible: true,
-        title: `Buy Wall (${maxBidVolume > 1000 ? (maxBidVolume/1000).toFixed(1) + 'k' : maxBidVolume.toFixed(2)})`,
-      };
-
-      if (!buyWallLineRef.current) {
-        buyWallLineRef.current = seriesRef.current.createPriceLine(buyOptions);
-      } else {
-        buyWallLineRef.current.applyOptions(buyOptions);
+    // Cleanup lines that no longer meet the threshold
+    for (const [price, line] of wallLinesRef.current.entries()) {
+      if (!activeWallPrices.has(price)) {
+        seriesRef.current.removePriceLine(line);
+        wallLinesRef.current.delete(price);
       }
-    } else if (buyWallLineRef.current) {
-      seriesRef.current.removePriceLine(buyWallLineRef.current);
-      buyWallLineRef.current = null;
     }
-
-    // Handle Sell Wall Line
-    if (maxAskVolume >= wallThreshold && sellWallPrice > 0) {
-      const sellOptions = {
-        price: sellWallPrice,
-        color: '#ef4444',
-        lineWidth: 2 as const,
-        lineStyle: 0 as const, // Solid line
-        axisLabelVisible: true,
-        title: `Sell Wall (${maxAskVolume > 1000 ? (maxAskVolume/1000).toFixed(1) + 'k' : maxAskVolume.toFixed(2)})`,
-      };
-
-      if (!sellWallLineRef.current) {
-        sellWallLineRef.current = seriesRef.current.createPriceLine(sellOptions);
-      } else {
-        sellWallLineRef.current.applyOptions(sellOptions);
-      }
-    } else if (sellWallLineRef.current) {
-      seriesRef.current.removePriceLine(sellWallLineRef.current);
-      sellWallLineRef.current = null;
-    }
-  }, [orderbookData, wallThreshold]);
+  }, [orderbookData, wallThreshold, volumeType]);
 
   return <div ref={chartContainerRef} className="w-full h-full min-h-[500px]" />;
 };
