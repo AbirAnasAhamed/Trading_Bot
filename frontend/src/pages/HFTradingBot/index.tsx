@@ -5,11 +5,14 @@ import { ChartContainer } from './components/ChartContainer';
 import { OrderbookPopup } from './components/OrderbookPopup';
 import { useChartWebSocket } from './hooks/useChartWebSocket';
 
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
 export const HFTradingBot: React.FC = () => {
   const [selectedExchange, setSelectedExchange] = useState<string>('binance');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC/USDT');
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('1m');
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+  const [isSelectorsVisible, setIsSelectorsVisible] = useState<boolean>(true);
   
   const { 
     isConnected, 
@@ -58,23 +61,33 @@ export const HFTradingBot: React.FC = () => {
     <div className="flex flex-col h-full relative">
       {topbarElement && createPortal(wsIndicator, topbarElement)}
 
-      <div className="bg-panel border border-panel rounded-xl p-6 shadow-sm flex flex-col flex-1">
-        <div className="flex justify-between items-end mb-4">
-          <Selectors 
-            exchanges={exchanges}
-            markets={markets}
-            selectedExchange={selectedExchange}
-            selectedSymbol={selectedSymbol}
-            selectedTimeframe={selectedTimeframe}
-            onExchangeChange={setSelectedExchange}
-            onSymbolChange={setSelectedSymbol}
-            onTimeframeChange={setSelectedTimeframe}
-            wallThreshold={wallThreshold}
-            setWallThreshold={setWallThreshold}
-            volumeType={volumeType}
-            setVolumeType={setVolumeType}
-          />
-        </div>
+      <div className="bg-panel border border-panel rounded-xl p-6 pt-8 shadow-sm flex flex-col flex-1 relative">
+        <button 
+          onClick={() => setIsSelectorsVisible(!isSelectorsVisible)}
+          className="absolute top-2 right-2 p-1.5 bg-background border border-panel rounded-lg text-gray-500 hover:text-white transition-colors z-20 hover:border-blue-500"
+          title={isSelectorsVisible ? "Hide Controls" : "Show Controls"}
+        >
+          {isSelectorsVisible ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {isSelectorsVisible && (
+          <div className="pr-10">
+            <Selectors 
+              exchanges={exchanges}
+              markets={markets}
+              selectedExchange={selectedExchange}
+              selectedSymbol={selectedSymbol}
+              selectedTimeframe={selectedTimeframe}
+              onExchangeChange={setSelectedExchange}
+              onSymbolChange={setSelectedSymbol}
+              onTimeframeChange={setSelectedTimeframe}
+              wallThreshold={wallThreshold}
+              setWallThreshold={setWallThreshold}
+              volumeType={volumeType}
+              setVolumeType={setVolumeType}
+            />
+          </div>
+        )}
 
         <div className="flex-1 bg-background border border-panel rounded-lg overflow-hidden relative">
            {historicalData.length === 0 && selectedSymbol ? (
