@@ -198,5 +198,5 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     }
   }, [orderbookData, wallThreshold, volumeType]);
 
-  return <div ref={chartContainerRef} className="w-full h-full min-h-[500px]" />;
+  return <div ref={chartContainerRef} className="absolute inset-0" />;
 };
