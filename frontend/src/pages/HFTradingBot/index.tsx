@@ -71,7 +71,7 @@ export const HFTradingBot: React.FC = () => {
         </button>
 
         {isSelectorsVisible && (
-          <div className="pr-10">
+          <div className="flex justify-start items-end mb-4 pr-10">
             <Selectors 
               exchanges={exchanges}
               markets={markets}
