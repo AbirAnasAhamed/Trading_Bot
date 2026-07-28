@@ -17,7 +17,7 @@ interface SelectorsProps {
   setVolumeType?: (type: 'base' | 'quote') => void;
 }
 
-const timeframes = ['1m', '3m', '5m', '15m', '1h', '4h', '1d', '1w', '1M'];
+const timeframes = ['1s', '1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
 
 const formatVolume = (vol: number) => {
   if (vol >= 1000000) return (vol / 1000000).toFixed(0) + 'M';
@@ -60,21 +60,27 @@ export const Selectors: React.FC<SelectorsProps> = ({
           </div>
         </button>
 
-        {/* Timeframe Selector (Custom Input) */}
-        <div className="w-24">
+        {/* Timeframe Selector (Dropdown + Manual Input) */}
+        <div className="flex bg-background border border-panel rounded-lg focus-within:border-blue-500 transition-colors">
+          <select 
+            className="bg-transparent text-white font-bold pl-3 pr-1 py-2 focus:outline-none cursor-pointer border-r border-panel"
+            value={timeframes.includes(selectedTimeframe) ? selectedTimeframe : ''}
+            onChange={(e) => {
+              if (e.target.value) onTimeframeChange(e.target.value);
+            }}
+          >
+            <option value="" disabled className="bg-panel">Presets</option>
+            {timeframes.map((tf) => (
+              <option key={tf} value={tf} className="bg-panel">{tf}</option>
+            ))}
+          </select>
           <input 
             type="text"
-            list="timeframes-list"
-            className="w-full h-full bg-background border border-panel rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-blue-500 text-center"
+            className="w-16 bg-transparent px-2 py-2 text-white font-bold focus:outline-none text-center"
             value={selectedTimeframe}
             onChange={(e) => onTimeframeChange(e.target.value)}
-            placeholder="e.g. 1m"
+            placeholder="Custom"
           />
-          <datalist id="timeframes-list">
-            {timeframes.map((tf) => (
-              <option key={tf} value={tf} />
-            ))}
-          </datalist>
         </div>
 
         {/* Wall Threshold Pill */}
