@@ -10,7 +10,7 @@ interface DeployBotModalProps {
   symbol: string;
 }
 
-type TabType = 'basic' | 'triggers' | 'risk';
+type TabType = 'basic' | 'triggers' | 'risk' | 'advanced';
 
 export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose, symbol }) => {
   const [activeTab, setActiveTab] = useState<TabType>('basic');
@@ -130,6 +130,16 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
           >
             Risk Management
           </button>
+          <button 
+            onClick={() => setActiveTab('advanced')}
+            className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
+              activeTab === 'advanced' 
+                ? 'text-[#00ff88] bg-[#00ff88]/5 border border-b-0 border-[#00ff88]/20' 
+                : 'text-gray-500 hover:text-gray-300 border border-transparent border-b-0'
+            }`}
+          >
+            Advanced
+          </button>
         </div>
 
         {/* Body */}
@@ -156,6 +166,18 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
               takeProfit={takeProfit} setTakeProfit={setTakeProfit}
               stopLoss={stopLoss} setStopLoss={setStopLoss}
             />
+          </div>
+
+          <div className={activeTab === 'advanced' ? 'block animate-in fade-in slide-in-from-bottom-2 duration-300 h-full' : 'hidden'}>
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20">
+                <Rocket className="w-8 h-8 text-blue-500 opacity-50" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Advanced Configs</h3>
+              <p className="text-gray-400 text-sm max-w-sm">
+                Advanced AI optimization and backtesting parameters will be available in the upcoming update.
+              </p>
+            </div>
           </div>
           
           {error && (
