@@ -8,14 +8,15 @@ from app.execution.real_trader import RealTrader
 logger = get_logger(__name__)
 
 class BotEngine:
-    def __init__(self):
+    def __init__(self, bot_id: str = "default_bot"):
+        self.bot_id = bot_id
         self.processor = None
         self.strategy = None
         self.trader = None
         self.is_running = False
         self._task = None
 
-    async def start(self, symbol: str, mode: str):
+    async def start(self, symbol: str, mode: str, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
         if self.is_running:
             logger.warning("Bot is already running.")
             return
@@ -29,7 +30,14 @@ class BotEngine:
             self.trader = PaperTrader()
             
         # 2. Initialize Strategy with Trader
-        self.strategy = L2WallDetector(trader=self.trader, wall_multiplier=3.0, trade_amount=0.01)
+        self.strategy = L2WallDetector(
+            trader=self.trader, 
+            wall_multiplier=wall_multiplier, 
+            trade_amount=trade_amount,
+            min_wall_volume=min_wall_volume,
+            take_profit=take_profit,
+            stop_loss=stop_loss
+        )
         
         # 3. Initialize Processor with Strategy callback
         self.processor = OrderbookProcessor(symbol=symbol, strategy_callback=self.strategy.process_data)
@@ -59,4 +67,3 @@ class BotEngine:
         if isinstance(self.trader, RealTrader):
             await self.trader.close()
 
-bot_engine = BotEngine()

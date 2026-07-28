@@ -1,39 +1,55 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.core.engine import bot_engine
-import asyncio
+from app.core.bot_manager import bot_manager
+from typing import List, Optional
 
 router = APIRouter()
 
 class BotState(BaseModel):
+    bot_id: str
     is_running: bool
     symbol: str
     mode: str # 'paper' or 'real'
 
-@router.get("/state", response_model=BotState)
-async def get_bot_state():
-    symbol = "BTCUSDT"
-    mode = "paper"
-    if bot_engine.processor:
-        symbol = bot_engine.processor.symbol
-    if bot_engine.trader:
-        mode = "real" if bot_engine.trader.__class__.__name__ == "RealTrader" else "paper"
-        
-    return BotState(is_running=bot_engine.is_running, symbol=symbol, mode=mode)
+@router.get("/state", response_model=List[BotState])
+async def get_all_bots_state():
+    return bot_manager.get_all_bots()
+
+class StartBotRequest(BaseModel):
+    bot_name: str
+    symbol: str
+    mode: str
+    wall_multiplier: float = 3.0
+    trade_amount: float = 0.01
+    min_wall_volume: float = 10000.0
+    take_profit: float = 2.0
+    stop_loss: float = 1.0
 
 @router.post("/start")
-async def start_bot():
-    if bot_engine.is_running:
-        return {"message": "Bot is already running"}
+async def start_bot(req: StartBotRequest):
+    success = await bot_manager.start_bot(
+        bot_id=req.bot_name,
+        symbol=req.symbol,
+        mode=req.mode,
+        wall_multiplier=req.wall_multiplier,
+        trade_amount=req.trade_amount,
+        min_wall_volume=req.min_wall_volume,
+        take_profit=req.take_profit,
+        stop_loss=req.stop_loss
+    )
     
-    # Start in background task to not block the API
-    asyncio.create_task(bot_engine.start("BTCUSDT", "paper"))
+    if not success:
+        return {"message": "Bot is already running or could not be started"}
+        
     return {"message": "Bot started"}
 
+class StopBotRequest(BaseModel):
+    bot_name: str
+
 @router.post("/stop")
-async def stop_bot():
-    if not bot_engine.is_running:
-        return {"message": "Bot is not running"}
+async def stop_bot(req: StopBotRequest):
+    success = await bot_manager.stop_bot(req.bot_name)
+    if not success:
+        return {"message": "Bot not found or already stopped"}
         
-    await bot_engine.stop()
     return {"message": "Bot stopped"}
