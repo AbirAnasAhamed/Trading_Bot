@@ -69,17 +69,20 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     chartRef.current = chart;
     seriesRef.current = candlestickSeries;
 
-    // Handle resize
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      }
-    };
+    // Handle resize using ResizeObserver for dynamic layout changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length === 0 || entries[0].target !== chartContainerRef.current) return;
+      const newRect = entries[0].contentRect;
+      chart.applyOptions({ 
+        width: newRect.width,
+        height: newRect.height
+      });
+    });
 
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(chartContainerRef.current);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       chart.remove();
     };
   }, []);
