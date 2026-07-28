@@ -10,7 +10,6 @@ const mockTrades = [
 export const History: React.FC = () => {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-primary">Trade History</h1>
       
       <div className="bg-panel border border-panel rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">

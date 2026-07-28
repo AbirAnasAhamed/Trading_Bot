@@ -4,7 +4,6 @@ import { Key, Save } from 'lucide-react';
 export const Settings: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-primary">Settings</h1>
       
       <div className="bg-panel border border-panel rounded-xl shadow-sm p-6">
         <div className="flex items-center mb-6">

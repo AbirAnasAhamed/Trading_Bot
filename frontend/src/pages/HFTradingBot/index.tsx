@@ -46,8 +46,7 @@ export const HFTradingBot: React.FC = () => {
 
   return (
     <div className="space-y-6 flex flex-col h-full relative">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-primary">Order flow chart</h1>
+      <div className="flex justify-end">
         <div className="flex items-center">
           <span className={`w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
           <span className="text-sm font-medium text-secondary">{isConnected ? 'WS Connected' : 'WS Disconnected'}</span>

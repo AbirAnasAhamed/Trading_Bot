@@ -1,14 +1,27 @@
 import React from 'react';
 import { Moon, Sun, Bell, User } from 'lucide-react';
+import { useLocation } from 'react-router';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Topbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+
+  const getPageTitle = (path: string) => {
+    switch (path) {
+      case '/': return 'Dashboard';
+      case '/bots': return 'Bot Laboratory';
+      case '/hf-trading': return 'Order Flow Chart';
+      case '/history': return 'Trade History';
+      case '/settings': return 'Settings';
+      default: return '';
+    }
+  };
 
   return (
     <header className="h-16 bg-panel border-b border-panel flex items-center justify-between px-6 transition-colors duration-200">
-      <div className="flex-1">
-        {/* Can add breadcrumbs or page title here if needed */}
+      <div className="flex-1 flex items-center pl-2">
+        <h1 className="text-xl font-bold text-primary">{getPageTitle(location.pathname)}</h1>
       </div>
       
       <div className="flex items-center space-x-4">

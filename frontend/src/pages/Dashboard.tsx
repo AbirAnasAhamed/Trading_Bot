@@ -23,8 +23,6 @@ const data = [
 export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
-      
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-panel border border-panel rounded-xl p-6 shadow-sm">
