@@ -25,6 +25,7 @@ export const Topbar: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-4">
+        <div id="topbar-ws-indicator"></div>
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full text-secondary hover:bg-primary hover:text-primary transition-colors"

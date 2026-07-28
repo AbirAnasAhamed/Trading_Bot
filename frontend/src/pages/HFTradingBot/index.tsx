@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Selectors } from './components/Selectors';
 import { ChartContainer } from './components/ChartContainer';
 import { OrderbookPopup } from './components/OrderbookPopup';
@@ -44,14 +45,18 @@ export const HFTradingBot: React.FC = () => {
     }
   }, [selectedExchange, selectedSymbol, selectedTimeframe, watchOhlcv, watchOrderbook]);
 
+  const topbarElement = document.getElementById('topbar-ws-indicator');
+
+  const wsIndicator = (
+    <div className="flex items-center mr-2">
+      <span className={`w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+      <span className="text-sm font-medium text-secondary whitespace-nowrap">{isConnected ? 'WS Connected' : 'WS Disconnected'}</span>
+    </div>
+  );
+
   return (
-    <div className="space-y-6 flex flex-col h-full relative">
-      <div className="flex justify-end">
-        <div className="flex items-center">
-          <span className={`w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
-          <span className="text-sm font-medium text-secondary">{isConnected ? 'WS Connected' : 'WS Disconnected'}</span>
-        </div>
-      </div>
+    <div className="flex flex-col h-full relative">
+      {topbarElement && createPortal(wsIndicator, topbarElement)}
 
       <div className="bg-panel border border-panel rounded-xl p-6 shadow-sm flex flex-col flex-1">
         <div className="flex justify-between items-end mb-4">
