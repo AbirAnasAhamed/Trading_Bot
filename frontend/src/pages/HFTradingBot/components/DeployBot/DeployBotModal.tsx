@@ -10,7 +10,10 @@ interface DeployBotModalProps {
   symbol: string;
 }
 
+type TabType = 'basic' | 'triggers' | 'risk';
+
 export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose, symbol }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [botName, setBotName] = useState(`Wallhunter-${symbol.replace('/', '')}`);
   const [mode, setMode] = useState('paper');
   const [tradeAmount, setTradeAmount] = useState(0.01);
@@ -95,32 +98,73 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex px-4 pt-2 gap-1 bg-[#0d0f15] border-b border-panel">
+          <button 
+            onClick={() => setActiveTab('basic')}
+            className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
+              activeTab === 'basic' 
+                ? 'text-[#00ff88] bg-[#00ff88]/5 border border-b-0 border-[#00ff88]/20' 
+                : 'text-gray-500 hover:text-gray-300 border border-transparent border-b-0'
+            }`}
+          >
+            Basic & Execution
+          </button>
+          <button 
+            onClick={() => setActiveTab('triggers')}
+            className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
+              activeTab === 'triggers' 
+                ? 'text-[#00ff88] bg-[#00ff88]/5 border border-b-0 border-[#00ff88]/20' 
+                : 'text-gray-500 hover:text-gray-300 border border-transparent border-b-0'
+            }`}
+          >
+            Entry Triggers
+          </button>
+          <button 
+            onClick={() => setActiveTab('risk')}
+            className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
+              activeTab === 'risk' 
+                ? 'text-[#00ff88] bg-[#00ff88]/5 border border-b-0 border-[#00ff88]/20' 
+                : 'text-gray-500 hover:text-gray-300 border border-transparent border-b-0'
+            }`}
+          >
+            Risk Management
+          </button>
+        </div>
+
         {/* Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-8">
-          <CoreSettings 
-            botName={botName} setBotName={setBotName}
-            mode={mode} setMode={setMode}
-            tradeAmount={tradeAmount} setTradeAmount={setTradeAmount}
-            symbol={symbol}
-          />
+        <div className="p-6 overflow-y-auto flex-1 h-[400px]">
           
-          <L2OrderbookConfig 
-            wallMultiplier={wallMultiplier} setWallMultiplier={setWallMultiplier}
-            minWallVolume={minWallVolume} setMinWallVolume={setMinWallVolume}
-          />
+          <div className={activeTab === 'basic' ? 'block animate-in fade-in slide-in-from-bottom-2 duration-300' : 'hidden'}>
+            <CoreSettings 
+              botName={botName} setBotName={setBotName}
+              mode={mode} setMode={setMode}
+              tradeAmount={tradeAmount} setTradeAmount={setTradeAmount}
+              symbol={symbol}
+            />
+          </div>
           
-          <RiskSettings 
-            takeProfit={takeProfit} setTakeProfit={setTakeProfit}
-            stopLoss={stopLoss} setStopLoss={setStopLoss}
-          />
+          <div className={activeTab === 'triggers' ? 'block animate-in fade-in slide-in-from-bottom-2 duration-300' : 'hidden'}>
+            <L2OrderbookConfig 
+              wallMultiplier={wallMultiplier} setWallMultiplier={setWallMultiplier}
+              minWallVolume={minWallVolume} setMinWallVolume={setMinWallVolume}
+            />
+          </div>
+          
+          <div className={activeTab === 'risk' ? 'block animate-in fade-in slide-in-from-bottom-2 duration-300' : 'hidden'}>
+            <RiskSettings 
+              takeProfit={takeProfit} setTakeProfit={setTakeProfit}
+              stopLoss={stopLoss} setStopLoss={setStopLoss}
+            />
+          </div>
           
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm font-medium">
+            <div className="mt-6 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm font-medium">
               {error}
             </div>
           )}
           {success && (
-            <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-500 rounded-lg text-sm font-medium">
+            <div className="mt-6 p-3 bg-green-500/10 border border-green-500/20 text-green-500 rounded-lg text-sm font-medium">
               Bot deployed successfully!
             </div>
           )}

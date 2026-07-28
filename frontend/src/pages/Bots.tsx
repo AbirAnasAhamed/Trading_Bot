@@ -1,65 +1,140 @@
-import React from 'react';
-import { Play, Square, Settings as SettingsIcon, Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Settings as SettingsIcon, Trash2, Loader2 } from 'lucide-react';
 
-const mockBots = [
-  { id: 1, name: 'BTC Grid Bot', pair: 'BTC/USDT', strategy: 'Grid Trading', status: 'running', profit: '+ $145.20' },
-  { id: 2, name: 'ETH DCA', pair: 'ETH/USDT', strategy: 'DCA', status: 'stopped', profit: '- $12.50' },
-  { id: 3, name: 'SOL MACD', pair: 'SOL/USDT', strategy: 'MACD Crossover', status: 'running', profit: '+ $89.00' },
-];
+interface BotState {
+  bot_id: string;
+  is_running: boolean;
+  symbol: string;
+  mode: string;
+}
 
 export const Bots: React.FC = () => {
+  const [bots, setBots] = useState<BotState[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const fetchBots = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/bot/state');
+      if (response.ok) {
+        const data = await response.json();
+        setBots(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch bots", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBots();
+    // Poll every 5 seconds to keep it live
+    const interval = setInterval(fetchBots, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleDelete = async (bot_name: string) => {
+    setDeletingId(bot_name);
+    try {
+      const response = await fetch('http://localhost:8000/api/bot/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bot_name })
+      });
+      if (response.ok) {
+        // Refresh bots after deletion
+        await fetchBots();
+      }
+    } catch (err) {
+      console.error("Failed to delete bot", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <button className="flex items-center px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-blue-600 transition-colors">
-          <Plus className="w-5 h-5 mr-2" />
-          Create New Bot
-        </button>
-      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockBots.map(bot => (
-          <div key={bot.id} className="bg-panel border border-panel rounded-xl p-6 shadow-sm flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-primary">{bot.name}</h3>
-                <span className="text-sm font-medium px-2 py-1 bg-primary text-secondary rounded mt-2 inline-block">
-                  {bot.pair}
-                </span>
-              </div>
-              <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${bot.status === 'running' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-                {bot.status}
-              </div>
-            </div>
-            
-            <div className="flex-1">
-              <p className="text-sm text-secondary mb-1">Strategy</p>
-              <p className="font-medium text-primary mb-4">{bot.strategy}</p>
-              
-              <p className="text-sm text-secondary mb-1">Current PnL</p>
-              <p className={`font-bold text-lg ${bot.profit.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                {bot.profit}
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-panel">
-              <button className="flex items-center text-sm font-medium text-secondary hover:text-primary transition-colors">
-                <SettingsIcon className="w-4 h-4 mr-2" />
-                Configure
-              </button>
-              
-              {bot.status === 'running' ? (
-                <button className="flex items-center px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-colors">
-                  <Square className="w-4 h-4 mr-1" /> Stop
-                </button>
-              ) : (
-                <button className="flex items-center px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-colors">
-                  <Play className="w-4 h-4 mr-1" /> Start
-                </button>
-              )}
-            </div>
+        {bots.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-12 bg-panel border border-panel rounded-xl text-center">
+            <h3 className="text-lg font-bold text-white mb-2">No active bots found</h3>
+            <p className="text-gray-400">Deploy a Wallhunter bot from the HFTrading tab to see it here.</p>
           </div>
-        ))}
+        ) : (
+          bots.map(bot => (
+            <div key={bot.bot_id} className="bg-panel border border-panel rounded-xl p-6 shadow-sm flex flex-col hover:border-blue-500/30 transition-colors duration-300 relative group overflow-hidden">
+              {/* Background gradient hint */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div>
+                  <h3 className="text-lg font-bold text-white">{bot.bot_id}</h3>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-xs font-bold px-2 py-1 bg-[#1e2330] text-blue-400 rounded border border-blue-500/20">
+                      {bot.symbol}
+                    </span>
+                    <span className={`text-xs font-bold px-2 py-1 rounded border uppercase ${
+                      bot.mode === 'real' 
+                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' 
+                        : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                    }`}>
+                      {bot.mode}
+                    </span>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded text-xs font-bold uppercase flex items-center gap-1.5 ${
+                  bot.is_running 
+                    ? 'bg-green-500/10 text-green-500 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.2)]' 
+                    : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                }`}>
+                  {bot.is_running && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}
+                  {bot.is_running ? 'Running' : 'Stopped'}
+                </div>
+              </div>
+              
+              <div className="flex-1 mt-2 relative z-10">
+                <p className="text-sm text-gray-400 mb-1">Strategy</p>
+                <p className="font-medium text-white mb-4">L2 Wallhunter</p>
+                
+                <p className="text-sm text-gray-400 mb-1">Current PnL</p>
+                <p className="font-bold text-lg text-gray-300">
+                  ---
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-panel relative z-10">
+                <button className="flex items-center text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                  <SettingsIcon className="w-4 h-4 mr-2" />
+                  Details
+                </button>
+                
+                <button 
+                  onClick={() => handleDelete(bot.bot_id)}
+                  disabled={deletingId === bot.bot_id}
+                  className="flex items-center px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300 disabled:opacity-50"
+                  title="Stop and Delete Bot"
+                >
+                  {deletingId === bot.bot_id ? (
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4 mr-1.5" />
+                  )}
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
