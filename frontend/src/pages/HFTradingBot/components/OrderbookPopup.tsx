@@ -21,18 +21,20 @@ export const OrderbookPopup: React.FC<OrderbookPopupProps> = ({ orderbookData, s
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-          isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
+          isOpen 
+            ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30' 
+            : 'bg-gradient-to-br from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 shadow-lg shadow-cyan-500/30'
         }`}
         title="Toggle Orderbook"
       >
         {isOpen ? (
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 9h12M6 13h12M6 17h6" />
           </svg>
         )}
       </button>
