@@ -10,6 +10,7 @@ router = APIRouter()
 class BotState(BaseModel):
     bot_id: str
     is_running: bool
+    is_paused: bool = False
     symbol: str
     mode: str # 'paper' or 'real'
 
@@ -56,3 +57,17 @@ async def stop_bot(req: StopBotRequest, current_user: User = Depends(get_current
         return {"message": "Bot not found or already stopped"}
         
     return {"message": "Bot stopped"}
+
+@router.post("/pause")
+async def pause_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
+    success = bot_manager.pause_bot(req.bot_name)
+    if not success:
+        return {"message": "Bot not found or already paused"}
+    return {"message": "Bot paused"}
+
+@router.post("/resume")
+async def resume_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
+    success = bot_manager.resume_bot(req.bot_name)
+    if not success:
+        return {"message": "Bot not found or already running"}
+    return {"message": "Bot resumed"}

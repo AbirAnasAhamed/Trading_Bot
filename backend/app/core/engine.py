@@ -14,7 +14,12 @@ class BotEngine:
         self.strategy = None
         self.trader = None
         self.is_running = False
+        self.is_paused = False
         self._task = None
+
+    async def _handle_data(self, data: dict):
+        if not self.is_paused and self.strategy:
+            await self.strategy.process_data(data)
 
     async def start(self, symbol: str, mode: str, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
         if self.is_running:
@@ -39,8 +44,8 @@ class BotEngine:
             stop_loss=stop_loss
         )
         
-        # 3. Initialize Processor with Strategy callback
-        self.processor = OrderbookProcessor(symbol=symbol, strategy_callback=self.strategy.process_data)
+        # 3. Initialize Processor with engine callback
+        self.processor = OrderbookProcessor(symbol=symbol, strategy_callback=self._handle_data)
         
         self.is_running = True
         
@@ -66,4 +71,14 @@ class BotEngine:
                 
         if isinstance(self.trader, RealTrader):
             await self.trader.close()
+
+    def pause(self):
+        if self.is_running and not self.is_paused:
+            logger.info("Pausing bot engine...")
+            self.is_paused = True
+            
+    def resume(self):
+        if self.is_running and self.is_paused:
+            logger.info("Resuming bot engine...")
+            self.is_paused = False
 

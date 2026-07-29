@@ -15,6 +15,7 @@ class BotManager:
             info = {
                 "bot_id": bot_id,
                 "is_running": engine.is_running,
+                "is_paused": engine.is_paused,
                 "symbol": getattr(engine.processor, 'symbol', 'Unknown') if engine.processor else 'Unknown',
                 "mode": "real" if engine.trader and engine.trader.__class__.__name__ == "RealTrader" else "paper"
             }
@@ -28,6 +29,7 @@ class BotManager:
         return {
             "bot_id": bot_id,
             "is_running": engine.is_running,
+            "is_paused": engine.is_paused,
             "symbol": getattr(engine.processor, 'symbol', 'Unknown') if engine.processor else 'Unknown',
             "mode": "real" if engine.trader and engine.trader.__class__.__name__ == "RealTrader" else "paper"
         }
@@ -65,6 +67,18 @@ class BotManager:
         del self.active_bots[bot_id]
         logger.info(f"BotManager: Stopped and removed bot {bot_id}")
         return True
+
+    def pause_bot(self, bot_id: str):
+        if bot_id in self.active_bots:
+            self.active_bots[bot_id].pause()
+            return True
+        return False
+
+    def resume_bot(self, bot_id: str):
+        if bot_id in self.active_bots:
+            self.active_bots[bot_id].resume()
+            return True
+        return False
 
 # Singleton manager
 bot_manager = BotManager()
