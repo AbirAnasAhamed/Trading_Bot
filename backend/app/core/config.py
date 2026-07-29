@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
+    # Security Settings
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "super-secret-key-for-jwt-and-fernet-encryption-12345!")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
+
     class Config:
         env_file = ".env"
 
