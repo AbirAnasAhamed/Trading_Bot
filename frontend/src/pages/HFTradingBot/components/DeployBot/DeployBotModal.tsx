@@ -4,6 +4,7 @@ import { CoreSettings } from './CoreSettings';
 import { RiskSettings } from './RiskSettings';
 import { L2OrderbookConfig } from './strategies/L2OrderbookConfig';
 import { useAuth } from '../../../../context/AuthContext';
+import { Link } from 'react-router';
 
 interface DeployBotModalProps {
   isOpen: boolean;
@@ -18,9 +19,14 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [botName, setBotName] = useState(`Wallhunter-${symbol.replace('/', '')}`);
   const [mode, setMode] = useState('paper');
+  const [exchangeId, setExchangeId] = useState('');
   const [tradeAmount, setTradeAmount] = useState(0.01);
   const [takeProfit, setTakeProfit] = useState(2.0);
   const [stopLoss, setStopLoss] = useState(1.0);
+  
+  // Exchange Keys
+  const [configuredExchanges, setConfiguredExchanges] = useState<any[]>([]);
+  const [loadingExchanges, setLoadingExchanges] = useState(false);
   
   // Strategy specific
   const [wallMultiplier, setWallMultiplier] = useState(3.0);
@@ -29,6 +35,24 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && token) {
+      setLoadingExchanges(true);
+      fetch('http://localhost:8000/api/exchange-keys', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        setConfiguredExchanges(data || []);
+        if (data && data.length > 0) {
+          setExchangeId(data[0].exchange_id);
+        }
+      })
+      .catch(err => console.error("Failed to load exchanges", err))
+      .finally(() => setLoadingExchanges(false));
+    }
+  }, [isOpen, token]);
 
   const handleDeploy = useCallback(async () => {
     setIsDeploying(true);
@@ -47,6 +71,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
           bot_name: botName,
           symbol: symbol.replace('/', ''), // e.g. BTCUSDT
           mode: mode,
+          exchange_id: mode === 'real' ? exchangeId : undefined,
           wall_multiplier: wallMultiplier,
           trade_amount: tradeAmount,
           min_wall_volume: minWallVolume,
@@ -152,6 +177,8 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
             <CoreSettings 
               botName={botName} setBotName={setBotName}
               mode={mode} setMode={setMode}
+              exchangeId={exchangeId} setExchangeId={setExchangeId}
+              configuredExchanges={configuredExchanges}
               tradeAmount={tradeAmount} setTradeAmount={setTradeAmount}
               symbol={symbol}
             />
@@ -196,7 +223,12 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-panel bg-[#0d0f15] flex justify-end gap-3">
+        <div className="p-5 border-t border-panel bg-[#0d0f15] flex justify-end gap-3 items-center">
+          {mode === 'real' && configuredExchanges.length === 0 && !loadingExchanges && (
+            <p className="text-red-400 text-sm flex-1">
+              No API Keys found! Please <Link to="/settings" className="underline font-bold text-brand">configure in Settings</Link>.
+            </p>
+          )}
           <button 
             onClick={onClose}
             disabled={isDeploying}
@@ -206,8 +238,8 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
           </button>
           <button 
             onClick={handleDeploy}
-            disabled={isDeploying || success}
-            className="px-5 py-2.5 rounded-lg font-bold text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+            disabled={isDeploying || success || (mode === 'real' && configuredExchanges.length === 0)}
+            className="px-5 py-2.5 rounded-lg font-bold text-white bg-[var(--color-brand)] hover:opacity-90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDeploying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
             {isDeploying ? 'Deploying...' : 'Deploy Bot'}

@@ -21,9 +21,7 @@ class UserInDBBase(UserBase):
     class Config:
         from_attributes = True
 
-class UserAPIKeysUpdate(BaseModel):
-    api_key: str
-    api_secret: str
+
 
 # Additional properties to return via API
 class UserResponse(UserInDBBase):

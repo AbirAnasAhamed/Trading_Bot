@@ -6,7 +6,7 @@ from typing import Any
 
 from app.db.database import get_db
 from app.models.schema import User
-from app.schemas.user import UserCreate, UserResponse, Token, UserAPIKeysUpdate
+from app.schemas.user import UserCreate, UserResponse, Token
 from app.core.security import get_password_hash, verify_password, create_access_token, encrypt_data
 from app.api.deps import get_current_active_user
 from app.core.config import settings
@@ -67,16 +67,4 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)) -
     """
     return current_user
 
-@router.post("/update-api-keys")
-async def update_api_keys(
-    keys: UserAPIKeysUpdate, 
-    db: AsyncSession = Depends(get_db), 
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
-    """
-    Update Binance API keys (Securely encrypted in the database).
-    """
-    current_user.encrypted_api_key = encrypt_data(keys.api_key)
-    current_user.encrypted_api_secret = encrypt_data(keys.api_secret)
-    await db.commit()
-    return {"message": "API keys encrypted and updated successfully"}
+

@@ -5,13 +5,16 @@ interface CoreSettingsProps {
   setBotName: (val: string) => void;
   mode: string;
   setMode: (val: string) => void;
+  exchangeId: string;
+  setExchangeId: (val: string) => void;
+  configuredExchanges: any[];
   tradeAmount: number;
   setTradeAmount: (val: number) => void;
   symbol: string;
 }
 
 export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
-  botName, setBotName, mode, setMode, tradeAmount, setTradeAmount, symbol
+  botName, setBotName, mode, setMode, exchangeId, setExchangeId, configuredExchanges, tradeAmount, setTradeAmount, symbol
 }) => {
   return (
     <div className="space-y-4">
@@ -45,26 +48,66 @@ export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
           <select 
             value={mode}
             onChange={(e) => setMode(e.target.value)}
-            className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
           >
             <option value="paper">Paper Trading (Simulated)</option>
             <option value="real">Real Trading (Live Funds)</option>
           </select>
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Order Size</label>
-          <div className="relative">
-            <input 
-              type="number" 
-              step="0.01"
-              value={tradeAmount}
-              onChange={(e) => setTradeAmount(Number(e.target.value))}
-              className="w-full bg-[#0d0f15] border border-panel rounded-lg pl-3 pr-10 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-            />
-            <span className="absolute right-3 top-2 text-gray-500 text-sm">COIN</span>
+        
+        {mode === 'real' ? (
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+              Exchange
+            </label>
+            <select 
+              value={exchangeId}
+              onChange={(e) => setExchangeId(e.target.value)}
+              className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors capitalize"
+            >
+              {configuredExchanges.length === 0 ? (
+                <option value="" disabled>No API Keys found</option>
+              ) : (
+                configuredExchanges.map(ex => (
+                  <option key={ex.id} value={ex.exchange_id}>{ex.exchange_id}</option>
+                ))
+              )}
+            </select>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Order Size</label>
+            <div className="relative">
+              <input 
+                type="number" 
+                step="0.01"
+                value={tradeAmount}
+                onChange={(e) => setTradeAmount(Number(e.target.value))}
+                className="w-full bg-[#0d0f15] border border-panel rounded-lg pl-3 pr-10 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+              />
+              <span className="absolute right-3 top-2 text-gray-500 text-sm">COIN</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {mode === 'real' && (
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Order Size</label>
+            <div className="relative">
+              <input 
+                type="number" 
+                step="0.01"
+                value={tradeAmount}
+                onChange={(e) => setTradeAmount(Number(e.target.value))}
+                className="w-full bg-[#0d0f15] border border-panel rounded-lg pl-3 pr-10 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+              />
+              <span className="absolute right-3 top-2 text-gray-500 text-sm">COIN</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 });

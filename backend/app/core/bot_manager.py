@@ -34,7 +34,7 @@ class BotManager:
             "mode": engine.config.get('mode', 'paper')
         }
 
-    async def start_bot(self, bot_id: str, symbol: str=None, mode: str=None, wall_multiplier: float=3.0, trade_amount: float=0.01, min_wall_volume: float=10000.0, take_profit: float=2.0, stop_loss: float=1.0):
+    async def start_bot(self, bot_id: str, symbol: str=None, mode: str=None, exchange_id: str=None, api_key: str=None, api_secret: str=None, wall_multiplier: float=3.0, trade_amount: float=0.01, min_wall_volume: float=10000.0, take_profit: float=2.0, stop_loss: float=1.0):
         if bot_id in self.active_bots:
             engine = self.active_bots[bot_id]
             if engine.is_running:
@@ -52,6 +52,9 @@ class BotManager:
         asyncio.create_task(engine.start(
             symbol=symbol,
             mode=mode,
+            exchange_id=exchange_id,
+            api_key=api_key,
+            api_secret=api_secret,
             wall_multiplier=wall_multiplier,
             trade_amount=trade_amount,
             min_wall_volume=min_wall_volume,

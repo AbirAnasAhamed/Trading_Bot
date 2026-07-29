@@ -44,11 +44,22 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    encrypted_api_key = Column(String, nullable=True)
-    encrypted_api_secret = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Relationships can be added later (e.g. bots, backtests)
+    exchange_keys = relationship("ExchangeKey", back_populates="user", cascade="all, delete-orphan")
+
+class ExchangeKey(Base):
+    __tablename__ = "exchange_keys"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    exchange_id = Column(String, index=True, nullable=False) # e.g. "binance", "bybit"
+    encrypted_api_key = Column(String, nullable=False)
+    encrypted_api_secret = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", back_populates="exchange_keys")
 
 class MLModel(Base):
     __tablename__ = "ml_models"

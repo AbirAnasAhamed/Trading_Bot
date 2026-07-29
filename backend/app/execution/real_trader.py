@@ -8,11 +8,16 @@ from app.models.schema import TradeHistory
 logger = get_logger(__name__)
 
 class RealTrader(BaseTrader):
-    def __init__(self):
-        exchange_class = ccxt.binance
+    def __init__(self, exchange_id: str, api_key: str, api_secret: str):
+        try:
+            exchange_class = getattr(ccxt, exchange_id)
+        except AttributeError:
+            logger.error(f"Exchange {exchange_id} is not supported by CCXT")
+            raise ValueError(f"Exchange {exchange_id} is not supported")
+            
         self.exchange = exchange_class({
-            'apiKey': settings.BINANCE_API_KEY,
-            'secret': settings.BINANCE_API_SECRET,
+            'apiKey': api_key,
+            'secret': api_secret,
             'enableRateLimit': True,
             'options': {
                 'defaultType': 'spot',
@@ -20,9 +25,9 @@ class RealTrader(BaseTrader):
         })
         if settings.USE_TESTNET:
             self.exchange.set_sandbox_mode(True)
-            logger.info("RealTrader initialized in TESTNET (Sandbox) mode.")
+            logger.info(f"RealTrader initialized for {exchange_id} in TESTNET (Sandbox) mode.")
         else:
-            logger.warning("RealTrader initialized in LIVE mode. Real funds will be used.")
+            logger.warning(f"RealTrader initialized for {exchange_id} in LIVE mode. Real funds will be used.")
 
     async def execute_buy(self, symbol: str, price: float, amount: float):
         try:

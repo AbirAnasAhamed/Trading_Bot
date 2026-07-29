@@ -22,7 +22,7 @@ class BotEngine:
         if not self.is_paused and self.strategy:
             await self.strategy.process_data(data)
 
-    async def start(self, symbol: str = None, mode: str = None, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
+    async def start(self, symbol: str = None, mode: str = None, exchange_id: str = None, api_key: str = None, api_secret: str = None, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
         if self.is_running:
             logger.warning("Bot is already running.")
             return
@@ -31,6 +31,9 @@ class BotEngine:
             self.config = {
                 'symbol': symbol,
                 'mode': mode,
+                'exchange_id': exchange_id,
+                'api_key': api_key,
+                'api_secret': api_secret,
                 'wall_multiplier': wall_multiplier,
                 'trade_amount': trade_amount,
                 'min_wall_volume': min_wall_volume,
@@ -43,6 +46,9 @@ class BotEngine:
                 return
             symbol = self.config['symbol']
             mode = self.config['mode']
+            exchange_id = self.config.get('exchange_id')
+            api_key = self.config.get('api_key')
+            api_secret = self.config.get('api_secret')
             wall_multiplier = self.config['wall_multiplier']
             trade_amount = self.config['trade_amount']
             min_wall_volume = self.config['min_wall_volume']
@@ -53,7 +59,7 @@ class BotEngine:
         
         # 1. Initialize Trader
         if mode == 'real':
-            self.trader = RealTrader()
+            self.trader = RealTrader(exchange_id=exchange_id, api_key=api_key, api_secret=api_secret)
         else:
             self.trader = PaperTrader()
             
