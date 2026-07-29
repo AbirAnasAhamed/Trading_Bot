@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db.database import Base
 from datetime import datetime
 
@@ -30,3 +31,48 @@ class TradeHistory(Base):
     price = Column(Float, nullable=False)
     amount = Column(Float, nullable=False)
     pnl = Column(Float, default=0.0)
+
+# ==========================================
+# Future SaaS & Advanced Features Schemas
+# ==========================================
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships can be added later (e.g. bots, backtests)
+
+class MLModel(Base):
+    __tablename__ = "ml_models"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    model_name = Column(String, index=True, nullable=False)
+    version = Column(String, nullable=False)
+    accuracy = Column(Float, nullable=True)
+    status = Column(String, default="training") # training, active, archived
+    file_path = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class BacktestResult(Base):
+    __tablename__ = "backtest_results"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    strategy_name = Column(String, index=True, nullable=False)
+    symbol = Column(String, nullable=False)
+    timeframe = Column(String, nullable=False)
+    
+    # Metrics
+    total_trades = Column(Integer, default=0)
+    win_rate = Column(Float, default=0.0)
+    total_pnl = Column(Float, default=0.0)
+    max_drawdown = Column(Float, default=0.0)
+    
+    # Context
+    status = Column(String, default="running") # running, completed, failed
+    created_at = Column(DateTime, default=datetime.utcnow)
