@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import status, bot_control
+from app.api.routes import status, bot_control, system
 from app.api.ws import ccxt_stream
 from app.db.database import create_tables
 from app.db.timescale import setup_hyper_tables
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(status.router, prefix="/api/status", tags=["Status"])
 app.include_router(bot_control.router, prefix="/api/bot", tags=["Bot Control"])
 app.include_router(ccxt_stream.router, prefix="/api/ws", tags=["WebSocket Data Stream"])
+app.include_router(system.router, prefix="/api/system", tags=["System & Background Tasks"])
 
 @app.on_event("startup")
 async def startup_event():
