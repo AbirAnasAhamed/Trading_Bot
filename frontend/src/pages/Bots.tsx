@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Settings as SettingsIcon, Trash2, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface BotState {
   bot_id: string;
@@ -9,13 +10,18 @@ interface BotState {
 }
 
 export const Bots: React.FC = () => {
+  const { token } = useAuth();
   const [bots, setBots] = useState<BotState[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const fetchBots = async () => {
+  const fetchBots = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/bot/state');
+      const response = await fetch('http://localhost:8000/api/bot/state', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setBots(data);
@@ -25,21 +31,24 @@ export const Bots: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchBots();
     // Poll every 5 seconds to keep it live
     const interval = setInterval(fetchBots, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchBots]);
 
   const handleDelete = async (bot_name: string) => {
     setDeletingId(bot_name);
     try {
       const response = await fetch('http://localhost:8000/api/bot/stop', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ bot_name })
       });
       if (response.ok) {

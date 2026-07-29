@@ -3,6 +3,7 @@ import { X, Rocket, Loader2 } from 'lucide-react';
 import { CoreSettings } from './CoreSettings';
 import { RiskSettings } from './RiskSettings';
 import { L2OrderbookConfig } from './strategies/L2OrderbookConfig';
+import { useAuth } from '../../../../context/AuthContext';
 
 interface DeployBotModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface DeployBotModalProps {
 type TabType = 'basic' | 'triggers' | 'risk' | 'advanced';
 
 export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose, symbol }) => {
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [botName, setBotName] = useState(`Wallhunter-${symbol.replace('/', '')}`);
   const [mode, setMode] = useState('paper');
@@ -39,6 +41,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           bot_name: botName,
