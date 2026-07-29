@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from datetime import timedelta
 from typing import Any
 
@@ -14,11 +15,12 @@ from app.core.config import settings
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse)
-def register_user(user_in: UserCreate, db: Session = Depends(get_db)) -> Any:
+async def register_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> Any:
     """
     Register a new user.
     """
-    user = db.query(User).filter(User.email == user_in.email).first()
+    result = await db.execute(select(User).where(User.email == user_in.email))
+    user = result.scalars().first()
     if user:
         raise HTTPException(
             status_code=400,
@@ -32,16 +34,17 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)) -> Any:
         is_superuser=False,
     )
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
 @router.post("/login", response_model=Token)
-def login_access_token(user_in: UserCreate, db: Session = Depends(get_db)) -> Any:
+async def login_access_token(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = db.query(User).filter(User.email == user_in.email).first()
+    result = await db.execute(select(User).where(User.email == user_in.email))
+    user = result.scalars().first()
     if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
@@ -58,16 +61,16 @@ def login_access_token(user_in: UserCreate, db: Session = Depends(get_db)) -> An
     }
 
 @router.get("/me", response_model=UserResponse)
-def read_users_me(current_user: User = Depends(get_current_active_user)) -> Any:
+async def read_users_me(current_user: User = Depends(get_current_active_user)) -> Any:
     """
     Get current user profile.
     """
     return current_user
 
 @router.post("/update-api-keys")
-def update_api_keys(
+async def update_api_keys(
     keys: UserAPIKeysUpdate, 
-    db: Session = Depends(get_db), 
+    db: AsyncSession = Depends(get_db), 
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
@@ -75,5 +78,5 @@ def update_api_keys(
     """
     current_user.encrypted_api_key = encrypt_data(keys.api_key)
     current_user.encrypted_api_secret = encrypt_data(keys.api_secret)
-    db.commit()
+    await db.commit()
     return {"message": "API keys encrypted and updated successfully"}
