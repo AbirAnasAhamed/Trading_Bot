@@ -44,6 +44,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    encrypted_api_key = Column(String, nullable=True)
+    encrypted_api_secret = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships can be added later (e.g. bots, backtests)

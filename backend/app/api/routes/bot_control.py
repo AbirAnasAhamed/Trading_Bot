@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.core.bot_manager import bot_manager
 from typing import List, Optional
+from app.api.deps import get_current_active_user
+from app.models.schema import User
 
 router = APIRouter()
 
@@ -12,7 +14,8 @@ class BotState(BaseModel):
     mode: str # 'paper' or 'real'
 
 @router.get("/state", response_model=List[BotState])
-async def get_all_bots_state():
+async def get_all_bots_state(current_user: User = Depends(get_current_active_user)):
+    # In a full SaaS, this would filter bots by current_user.id
     return bot_manager.get_all_bots()
 
 class StartBotRequest(BaseModel):
@@ -26,7 +29,7 @@ class StartBotRequest(BaseModel):
     stop_loss: float = 1.0
 
 @router.post("/start")
-async def start_bot(req: StartBotRequest):
+async def start_bot(req: StartBotRequest, current_user: User = Depends(get_current_active_user)):
     success = await bot_manager.start_bot(
         bot_id=req.bot_name,
         symbol=req.symbol,
@@ -47,7 +50,7 @@ class StopBotRequest(BaseModel):
     bot_name: str
 
 @router.post("/stop")
-async def stop_bot(req: StopBotRequest):
+async def stop_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
     success = await bot_manager.stop_bot(req.bot_name)
     if not success:
         return {"message": "Bot not found or already stopped"}

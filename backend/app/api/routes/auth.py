@@ -5,8 +5,10 @@ from typing import Any
 
 from app.db.database import get_db
 from app.models.schema import User
-from app.schemas.user import UserCreate, UserResponse, Token
-from app.core.security import get_password_hash, verify_password, create_access_token
+from app.schemas.user import UserCreate, UserResponse, Token, UserAPIKeysUpdate
+from app.core.security import get_password_hash, verify_password, create_access_token, encrypt_data
+from app.api.deps import get_current_active_user
+from app.core.config import settings
 from app.core.config import settings
 
 router = APIRouter()
@@ -54,3 +56,24 @@ def login_access_token(user_in: UserCreate, db: Session = Depends(get_db)) -> An
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+@router.get("/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(get_current_active_user)) -> Any:
+    """
+    Get current user profile.
+    """
+    return current_user
+
+@router.post("/update-api-keys")
+def update_api_keys(
+    keys: UserAPIKeysUpdate, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """
+    Update Binance API keys (Securely encrypted in the database).
+    """
+    current_user.encrypted_api_key = encrypt_data(keys.api_key)
+    current_user.encrypted_api_secret = encrypt_data(keys.api_secret)
+    db.commit()
+    return {"message": "API keys encrypted and updated successfully"}
