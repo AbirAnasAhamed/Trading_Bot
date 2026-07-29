@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Activity, Shield, Zap, ChevronRight, BarChart3, Lock, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Activity, Shield, Zap, ChevronRight, BarChart3 } from 'lucide-react';
 import { LoginModal } from './LoginModal';
 import { RegisterModal } from './RegisterModal';
 
