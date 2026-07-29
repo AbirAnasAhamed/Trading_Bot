@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     BINANCE_API_SECRET: str = os.getenv("BINANCE_API_SECRET", "")
     USE_TESTNET: bool = os.getenv("USE_TESTNET", "True").lower() in ("true", "1", "t")
 
+    # Redis & Celery Settings
+    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
     class Config:
         env_file = ".env"
 

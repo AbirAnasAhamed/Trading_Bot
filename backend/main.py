@@ -4,6 +4,7 @@ from app.api.routes import status, bot_control, system
 from app.api.ws import ccxt_stream
 from app.db.database import create_tables
 from app.db.timescale import setup_hyper_tables
+from app.db.redis import redis_client
 from app.services.ccxt_manager import CCXTManager
 
 app = FastAPI(title="Crypto Algo Trading Bot API")
@@ -25,10 +26,12 @@ app.include_router(system.router, prefix="/api/system", tags=["System & Backgrou
 async def startup_event():
     await create_tables()
     await setup_hyper_tables()
+    await redis_client.connect()
 
 @app.on_event("shutdown")
 async def shutdown_event():
     await CCXTManager.close_all()
+    await redis_client.close()
 
 if __name__ == "__main__":
     import uvicorn
