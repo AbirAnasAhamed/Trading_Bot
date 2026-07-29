@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Settings as SettingsIcon, Trash2, Loader2, Play, Pause } from 'lucide-react';
+import { Settings as SettingsIcon, Trash2, Loader2, Play, Pause, Square, PlayCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface BotState {
@@ -16,6 +16,7 @@ export const Bots: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [startStopId, setStartStopId] = useState<string | null>(null);
 
   const fetchBots = useCallback(async () => {
     try {
@@ -45,7 +46,7 @@ export const Bots: React.FC = () => {
   const handleDelete = async (bot_name: string) => {
     setDeletingId(bot_name);
     try {
-      const response = await fetch('http://localhost:8000/api/bot/stop', {
+      const response = await fetch('http://localhost:8000/api/bot/delete', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -61,6 +62,28 @@ export const Bots: React.FC = () => {
       console.error("Failed to delete bot", err);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleStartStop = async (bot: BotState) => {
+    setStartStopId(bot.bot_id);
+    const endpoint = bot.is_running ? '/api/bot/stop' : '/api/bot/start';
+    try {
+      const response = await fetch(`http://localhost:8000${endpoint}`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ bot_name: bot.bot_id })
+      });
+      if (response.ok) {
+        await fetchBots();
+      }
+    } catch (err) {
+      console.error("Failed to change bot state", err);
+    } finally {
+      setStartStopId(null);
     }
   };
 
@@ -155,39 +178,61 @@ export const Bots: React.FC = () => {
                   Details
                 </button>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap justify-end gap-2 mt-4 md:mt-0">
                   <button 
-                    onClick={() => handleTogglePause(bot)}
-                    disabled={togglingId === bot.bot_id || !bot.is_running}
-                    className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 disabled:opacity-50 ${
-                      bot.is_paused 
-                        ? 'bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white' 
-                        : 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-white'
+                    onClick={() => handleStartStop(bot)}
+                    disabled={startStopId === bot.bot_id}
+                    className={`flex items-center px-3 py-2 rounded-lg transition-all duration-300 disabled:opacity-50 ${
+                      !bot.is_running 
+                        ? 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white' 
+                        : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white'
                     }`}
-                    title={bot.is_paused ? "Resume Bot" : "Pause Bot"}
+                    title={bot.is_running ? "Stop Bot" : "Start Bot"}
                   >
-                    {togglingId === bot.bot_id ? (
-                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    ) : bot.is_paused ? (
-                      <Play className="w-4 h-4 mr-1.5" />
+                    {startStopId === bot.bot_id ? (
+                      <Loader2 className="w-4 h-4 md:mr-1.5 animate-spin" />
+                    ) : !bot.is_running ? (
+                      <PlayCircle className="w-4 h-4 md:mr-1.5" />
                     ) : (
-                      <Pause className="w-4 h-4 mr-1.5" />
+                      <Square className="w-4 h-4 md:mr-1.5" />
                     )}
-                    {bot.is_paused ? 'Resume' : 'Pause'}
+                    <span className="hidden md:inline">{!bot.is_running ? 'Start' : 'Stop'}</span>
                   </button>
+
+                  {bot.is_running && (
+                    <button 
+                      onClick={() => handleTogglePause(bot)}
+                      disabled={togglingId === bot.bot_id}
+                      className={`flex items-center px-3 py-2 rounded-lg transition-all duration-300 disabled:opacity-50 ${
+                        bot.is_paused 
+                          ? 'bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white' 
+                          : 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-white'
+                      }`}
+                      title={bot.is_paused ? "Resume Bot" : "Pause Bot"}
+                    >
+                      {togglingId === bot.bot_id ? (
+                        <Loader2 className="w-4 h-4 md:mr-1.5 animate-spin" />
+                      ) : bot.is_paused ? (
+                        <Play className="w-4 h-4 md:mr-1.5" />
+                      ) : (
+                        <Pause className="w-4 h-4 md:mr-1.5" />
+                      )}
+                      <span className="hidden md:inline">{bot.is_paused ? 'Resume' : 'Pause'}</span>
+                    </button>
+                  )}
                   
                   <button 
                     onClick={() => handleDelete(bot.bot_id)}
                     disabled={deletingId === bot.bot_id}
-                    className="flex items-center px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300 disabled:opacity-50"
-                    title="Stop and Delete Bot"
+                    className="flex items-center px-3 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300 disabled:opacity-50"
+                    title="Delete Bot"
                   >
                     {deletingId === bot.bot_id ? (
-                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      <Loader2 className="w-4 h-4 md:mr-1.5 animate-spin" />
                     ) : (
-                      <Trash2 className="w-4 h-4 mr-1.5" />
+                      <Trash2 className="w-4 h-4 md:mr-1.5" />
                     )}
-                    Delete
+                    <span className="hidden md:inline">Delete</span>
                   </button>
                 </div>
               </div>

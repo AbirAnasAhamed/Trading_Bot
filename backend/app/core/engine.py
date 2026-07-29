@@ -16,15 +16,38 @@ class BotEngine:
         self.is_running = False
         self.is_paused = False
         self._task = None
+        self.config = {}
 
     async def _handle_data(self, data: dict):
         if not self.is_paused and self.strategy:
             await self.strategy.process_data(data)
 
-    async def start(self, symbol: str, mode: str, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
+    async def start(self, symbol: str = None, mode: str = None, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
         if self.is_running:
             logger.warning("Bot is already running.")
             return
+
+        if symbol:
+            self.config = {
+                'symbol': symbol,
+                'mode': mode,
+                'wall_multiplier': wall_multiplier,
+                'trade_amount': trade_amount,
+                'min_wall_volume': min_wall_volume,
+                'take_profit': take_profit,
+                'stop_loss': stop_loss
+            }
+        else:
+            if not self.config:
+                logger.error("No config available to start bot.")
+                return
+            symbol = self.config['symbol']
+            mode = self.config['mode']
+            wall_multiplier = self.config['wall_multiplier']
+            trade_amount = self.config['trade_amount']
+            min_wall_volume = self.config['min_wall_volume']
+            take_profit = self.config['take_profit']
+            stop_loss = self.config['stop_loss']
 
         logger.info(f"Starting bot engine for {symbol} in {mode} mode.")
         

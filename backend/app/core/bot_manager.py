@@ -16,8 +16,8 @@ class BotManager:
                 "bot_id": bot_id,
                 "is_running": engine.is_running,
                 "is_paused": engine.is_paused,
-                "symbol": getattr(engine.processor, 'symbol', 'Unknown') if engine.processor else 'Unknown',
-                "mode": "real" if engine.trader and engine.trader.__class__.__name__ == "RealTrader" else "paper"
+                "symbol": engine.config.get('symbol', 'Unknown'),
+                "mode": engine.config.get('mode', 'paper')
             }
             bots_info.append(info)
         return bots_info
@@ -30,14 +30,19 @@ class BotManager:
             "bot_id": bot_id,
             "is_running": engine.is_running,
             "is_paused": engine.is_paused,
-            "symbol": getattr(engine.processor, 'symbol', 'Unknown') if engine.processor else 'Unknown',
-            "mode": "real" if engine.trader and engine.trader.__class__.__name__ == "RealTrader" else "paper"
+            "symbol": engine.config.get('symbol', 'Unknown'),
+            "mode": engine.config.get('mode', 'paper')
         }
 
-    async def start_bot(self, bot_id: str, symbol: str, mode: str, wall_multiplier: float, trade_amount: float, min_wall_volume: float, take_profit: float, stop_loss: float):
-        if bot_id in self.active_bots and self.active_bots[bot_id].is_running:
-            logger.warning(f"Bot {bot_id} is already running.")
-            return False
+    async def start_bot(self, bot_id: str, symbol: str=None, mode: str=None, wall_multiplier: float=3.0, trade_amount: float=0.01, min_wall_volume: float=10000.0, take_profit: float=2.0, stop_loss: float=1.0):
+        if bot_id in self.active_bots:
+            engine = self.active_bots[bot_id]
+            if engine.is_running:
+                logger.warning(f"Bot {bot_id} is already running.")
+                return False
+            logger.info(f"BotManager: Restarting BotEngine for {bot_id}")
+            asyncio.create_task(engine.start())
+            return True
 
         logger.info(f"BotManager: Initializing new BotEngine for {bot_id}")
         engine = BotEngine(bot_id=bot_id)
@@ -64,8 +69,20 @@ class BotManager:
         if engine.is_running:
             await engine.stop()
         
+        logger.info(f"BotManager: Stopped bot {bot_id}")
+        return True
+
+    async def delete_bot(self, bot_id: str):
+        if bot_id not in self.active_bots:
+            logger.warning(f"BotManager: Bot {bot_id} not found.")
+            return False
+            
+        engine = self.active_bots[bot_id]
+        if engine.is_running:
+            await engine.stop()
+        
         del self.active_bots[bot_id]
-        logger.info(f"BotManager: Stopped and removed bot {bot_id}")
+        logger.info(f"BotManager: Deleted bot {bot_id}")
         return True
 
     def pause_bot(self, bot_id: str):

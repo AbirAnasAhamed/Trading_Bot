@@ -21,8 +21,8 @@ async def get_all_bots_state(current_user: User = Depends(get_current_active_use
 
 class StartBotRequest(BaseModel):
     bot_name: str
-    symbol: str
-    mode: str
+    symbol: Optional[str] = None
+    mode: Optional[str] = None
     wall_multiplier: float = 3.0
     trade_amount: float = 0.01
     min_wall_volume: float = 10000.0
@@ -71,3 +71,10 @@ async def resume_bot(req: StopBotRequest, current_user: User = Depends(get_curre
     if not success:
         return {"message": "Bot not found or already running"}
     return {"message": "Bot resumed"}
+
+@router.post("/delete")
+async def delete_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
+    success = await bot_manager.delete_bot(req.bot_name)
+    if not success:
+        return {"message": "Bot not found"}
+    return {"message": "Bot deleted"}

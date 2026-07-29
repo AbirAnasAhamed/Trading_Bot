@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import status, bot_control, system, auth
@@ -8,6 +9,12 @@ from app.db.redis import redis_client
 from app.services.ccxt_manager import CCXTManager
 
 app = FastAPI(title="Crypto Algo Trading Bot API")
+
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/api/bot/state" not in record.getMessage()
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
 app.add_middleware(
     CORSMiddleware,
