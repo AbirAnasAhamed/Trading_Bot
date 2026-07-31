@@ -12,7 +12,7 @@ from app.services.ccxt_manager import CCXTManager
 
 router = APIRouter()
 
-@router.get("/supported", response_model=List[str])
+@router.get("/supported")
 async def get_supported_exchanges(current_user: User = Depends(get_current_active_user)):
     """
     Get a list of all supported exchanges in CCXT Pro.
@@ -78,17 +78,20 @@ async def add_or_update_exchange_key(
     
     encrypted_key = encrypt_data(key_data.api_key)
     encrypted_secret = encrypt_data(key_data.api_secret)
+    encrypted_passphrase = encrypt_data(key_data.passphrase) if key_data.passphrase else None
     
     if existing_key:
         existing_key.encrypted_api_key = encrypted_key
         existing_key.encrypted_api_secret = encrypted_secret
+        existing_key.encrypted_passphrase = encrypted_passphrase
         key_record = existing_key
     else:
         key_record = ExchangeKey(
             user_id=current_user.id,
             exchange_id=key_data.exchange_id,
             encrypted_api_key=encrypted_key,
-            encrypted_api_secret=encrypted_secret
+            encrypted_api_secret=encrypted_secret,
+            encrypted_passphrase=encrypted_passphrase
         )
         db.add(key_record)
         

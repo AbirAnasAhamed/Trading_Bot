@@ -12,11 +12,17 @@ interface ExchangeKey {
   masked_api_key: string;
 }
 
+interface SupportedExchange {
+  id: string;
+  name: string;
+  requires_passphrase: boolean;
+}
+
 export const Settings: React.FC = () => {
   const { token, logout } = useAuth();
   
   const [keys, setKeys] = useState<ExchangeKey[]>([]);
-  const [supportedExchanges, setSupportedExchanges] = useState<string[]>([]);
+  const [supportedExchanges, setSupportedExchanges] = useState<SupportedExchange[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -25,6 +31,7 @@ export const Settings: React.FC = () => {
   const [formExchange, setFormExchange] = useState('binance');
   const [formApiKey, setFormApiKey] = useState('');
   const [formApiSecret, setFormApiSecret] = useState('');
+  const [formPassphrase, setFormPassphrase] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
   const fetchSupportedExchanges = async () => {
@@ -35,7 +42,6 @@ export const Settings: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        // Capitalize names for display but keep ID as lowercase string
         setSupportedExchanges(data);
       }
     } catch (err) {
@@ -91,7 +97,8 @@ export const Settings: React.FC = () => {
         body: JSON.stringify({
           exchange_id: formExchange,
           api_key: formApiKey,
-          api_secret: formApiSecret
+          api_secret: formApiSecret,
+          passphrase: formPassphrase || undefined
         })
       });
       
@@ -101,6 +108,7 @@ export const Settings: React.FC = () => {
       setIsAdding(false);
       setFormApiKey('');
       setFormApiSecret('');
+      setFormPassphrase('');
       await fetchKeys();
       
     } catch (err: any) {
@@ -209,7 +217,7 @@ export const Settings: React.FC = () => {
                   className="w-full bg-primary border border-panel rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-brand transition-colors"
                 >
                   {supportedExchanges.map(ex => (
-                    <option key={ex} value={ex}>{ex.charAt(0).toUpperCase() + ex.slice(1)}</option>
+                    <option key={ex.id} value={ex.id}>{ex.name}</option>
                   ))}
                 </select>
               </div>
@@ -235,6 +243,19 @@ export const Settings: React.FC = () => {
                   className="w-full bg-primary border border-panel rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-brand transition-colors placeholder:text-muted"
                 />
               </div>
+
+              {supportedExchanges.find(ex => ex.id === formExchange)?.requires_passphrase && (
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-1">Passphrase / Password</label>
+                  <input 
+                    type="password" 
+                    value={formPassphrase}
+                    onChange={(e) => setFormPassphrase(e.target.value)}
+                    placeholder="Enter your Passphrase"
+                    className="w-full bg-primary border border-panel rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-brand transition-colors placeholder:text-muted"
+                  />
+                </div>
+              )}
               
               <div className="pt-2 flex items-center space-x-3">
                 <button 

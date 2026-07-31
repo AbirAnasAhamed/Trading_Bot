@@ -39,7 +39,8 @@ export const useChartWebSocket = () => {
         
         switch (msg.action) {
           case 'exchanges_list':
-            setExchanges(msg.data || []);
+            const formattedExchanges = (msg.data || []).map((ex: any) => typeof ex === 'string' ? ex : ex.id);
+            setExchanges(formattedExchanges);
             break;
           case 'markets_list':
             setMarkets(msg.data || []);

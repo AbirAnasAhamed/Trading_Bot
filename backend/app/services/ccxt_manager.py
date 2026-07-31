@@ -5,6 +5,7 @@ from typing import Dict, Any
 class CCXTManager:
     _instances: Dict[str, Any] = {}
     _lock = asyncio.Lock()
+    _supported_exchanges_cache: list = []
 
     @classmethod
     async def get_exchange(cls, exchange_id: str) -> Any:
@@ -37,7 +38,26 @@ class CCXTManager:
                 await ex.close()
             cls._instances.clear()
 
-    @staticmethod
-    def get_supported_exchanges():
-        """Returns list of exchanges that support websockets."""
-        return ccxtpro.exchanges
+    @classmethod
+    def get_supported_exchanges(cls):
+        """Returns list of exchanges with their credential requirements."""
+        if cls._supported_exchanges_cache:
+            return cls._supported_exchanges_cache
+            
+        supported = []
+        for ex_id in ccxtpro.exchanges:
+            try:
+                ex_class = getattr(ccxtpro, ex_id)
+                # Instantiate to get accurate required credentials (as class properties aren't fully populated)
+                ex_instance = ex_class()
+                requires_passphrase = ex_instance.requiredCredentials.get('password', False)
+                supported.append({
+                    "id": ex_id,
+                    "name": ex_instance.name,
+                    "requires_passphrase": requires_passphrase
+                })
+            except Exception:
+                continue
+                
+        cls._supported_exchanges_cache = supported
+        return supported

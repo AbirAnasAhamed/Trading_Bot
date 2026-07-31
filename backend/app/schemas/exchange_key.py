@@ -7,6 +7,7 @@ class ExchangeKeyBase(BaseModel):
 class ExchangeKeyCreate(ExchangeKeyBase):
     api_key: str
     api_secret: str
+    passphrase: str | None = None
 
 class ExchangeKeyResponse(ExchangeKeyBase):
     id: int

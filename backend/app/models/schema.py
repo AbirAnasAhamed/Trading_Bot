@@ -56,6 +56,7 @@ class ExchangeKey(Base):
     exchange_id = Column(String, index=True, nullable=False) # e.g. "binance", "bybit"
     encrypted_api_key = Column(String, nullable=False)
     encrypted_api_secret = Column(String, nullable=False)
+    encrypted_passphrase = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     

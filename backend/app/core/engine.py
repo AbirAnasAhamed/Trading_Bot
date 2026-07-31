@@ -16,11 +16,18 @@ class BotEngine:
         self.is_running = False
         self.is_paused = False
         self._task = None
+        self._heartbeat_task = None
         self.config = {}
 
     async def _handle_data(self, data: dict):
         if not self.is_paused and self.strategy:
             await self.strategy.process_data(data)
+
+    async def _heartbeat(self):
+        while self.is_running:
+            status = "Paused" if self.is_paused else "Running"
+            logger.info(f"💓 Heartbeat: Bot {self.bot_id} is currently {status}.")
+            await asyncio.sleep(5)
 
     async def start(self, symbol: str = None, mode: str = None, exchange_id: str = None, api_key: str = None, api_secret: str = None, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
         if self.is_running:
@@ -80,6 +87,7 @@ class BotEngine:
         
         # 4. Start processing in background
         self._task = asyncio.create_task(self.processor.start())
+        self._heartbeat_task = asyncio.create_task(self._heartbeat())
 
     async def stop(self):
         if not self.is_running:
@@ -94,8 +102,15 @@ class BotEngine:
         if self._task:
             self._task.cancel()
             try:
-                await self._task
-            except asyncio.CancelledError:
+                await asyncio.wait_for(self._task, timeout=1.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                pass
+
+        if self._heartbeat_task:
+            self._heartbeat_task.cancel()
+            try:
+                await asyncio.wait_for(self._heartbeat_task, timeout=1.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
                 pass
                 
         if isinstance(self.trader, RealTrader):

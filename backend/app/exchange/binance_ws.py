@@ -26,9 +26,15 @@ class BinanceWebSocketClient:
                         data = json.loads(message)
                         await self.callback(data)
             except websockets.ConnectionClosed:
+                if not self._running:
+                    break
                 logger.warning(f"Connection closed for {self.symbol}. Reconnecting in 5 seconds...")
                 await asyncio.sleep(5)
+            except asyncio.CancelledError:
+                break
             except Exception as e:
+                if not self._running:
+                    break
                 logger.error(f"WebSocket Error: {e}. Reconnecting in 5 seconds...")
                 await asyncio.sleep(5)
 
