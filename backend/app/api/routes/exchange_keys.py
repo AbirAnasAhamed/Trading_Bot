@@ -8,10 +8,18 @@ from app.models.schema import User, ExchangeKey
 from app.api.deps import get_current_active_user
 from app.schemas.exchange_key import ExchangeKeyCreate, ExchangeKeyResponse
 from app.core.security import encrypt_data, decrypt_data
+from app.services.ccxt_manager import CCXTManager
 
 router = APIRouter()
 
-@router.get("/", response_model=List[ExchangeKeyResponse])
+@router.get("/supported", response_model=List[str])
+async def get_supported_exchanges(current_user: User = Depends(get_current_active_user)):
+    """
+    Get a list of all supported exchanges in CCXT Pro.
+    """
+    return CCXTManager.get_supported_exchanges()
+
+@router.get("", response_model=List[ExchangeKeyResponse])
 async def get_exchange_keys(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
@@ -50,7 +58,7 @@ async def get_exchange_keys(
             
     return response_keys
 
-@router.post("/", response_model=ExchangeKeyResponse)
+@router.post("", response_model=ExchangeKeyResponse)
 async def add_or_update_exchange_key(
     key_data: ExchangeKeyCreate,
     current_user: User = Depends(get_current_active_user),

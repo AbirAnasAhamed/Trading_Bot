@@ -42,7 +42,12 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
       fetch('http://localhost:8000/api/exchange-keys', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch exchanges');
+        }
+        return res.json();
+      })
       .then(data => {
         setConfiguredExchanges(data || []);
         if (data && data.length > 0) {

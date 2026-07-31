@@ -2,14 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Key, Save, Trash2, Loader2, Plus, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Standard exchanges supported by ccxt pro
-const SUPPORTED_EXCHANGES = [
-  { id: 'binance', name: 'Binance' },
-  { id: 'bybit', name: 'Bybit' },
-  { id: 'kucoin', name: 'KuCoin' },
-  { id: 'kraken', name: 'Kraken' },
-  { id: 'okx', name: 'OKX' }
-];
+// The supported exchanges are now fetched dynamically from the backend
 
 interface ExchangeKey {
   id: number;
@@ -20,9 +13,10 @@ interface ExchangeKey {
 }
 
 export const Settings: React.FC = () => {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   
   const [keys, setKeys] = useState<ExchangeKey[]>([]);
+  const [supportedExchanges, setSupportedExchanges] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -33,8 +27,25 @@ export const Settings: React.FC = () => {
   const [formApiSecret, setFormApiSecret] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
+  const fetchSupportedExchanges = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('http://localhost:8000/api/exchange-keys/supported', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Capitalize names for display but keep ID as lowercase string
+        setSupportedExchanges(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch supported exchanges:', err);
+    }
+  };
+
   useEffect(() => {
     fetchKeys();
+    fetchSupportedExchanges();
   }, [token]);
 
   const fetchKeys = async () => {
@@ -45,6 +56,10 @@ export const Settings: React.FC = () => {
       const res = await fetch('http://localhost:8000/api/exchange-keys', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (res.status === 401) {
+        logout();
+        return;
+      }
       if (!res.ok) throw new Error('Failed to fetch keys');
       const data = await res.json();
       setKeys(data);
@@ -193,8 +208,8 @@ export const Settings: React.FC = () => {
                   onChange={(e) => setFormExchange(e.target.value)}
                   className="w-full bg-primary border border-panel rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-brand transition-colors"
                 >
-                  {SUPPORTED_EXCHANGES.map(ex => (
-                    <option key={ex.id} value={ex.id}>{ex.name}</option>
+                  {supportedExchanges.map(ex => (
+                    <option key={ex} value={ex}>{ex.charAt(0).toUpperCase() + ex.slice(1)}</option>
                   ))}
                 </select>
               </div>
