@@ -44,12 +44,17 @@ async def chart_stream(websocket: WebSocket):
                             "exchange": exchange_id,
                             "data": symbols
                         })
+                    except (WebSocketDisconnect, RuntimeError):
+                        raise
                     except Exception as e:
                         logger.error(f"[WebSocket] Error fetching markets: {e}")
-                        await websocket.send_json({
-                            "action": "error",
-                            "message": str(e)
-                        })
+                        try:
+                            await websocket.send_json({
+                                "action": "error",
+                                "message": str(e)
+                            })
+                        except (WebSocketDisconnect, RuntimeError):
+                            pass
 
             elif action == "watch_ohlcv":
                 exchange_id = message.get("exchange")
@@ -86,12 +91,17 @@ async def chart_stream(websocket: WebSocket):
                             })
                     except asyncio.CancelledError:
                         logger.info(f"[WebSocket] Stopped watching OHLCV for {symbol}")
+                    except (WebSocketDisconnect, RuntimeError):
+                        pass
                     except Exception as e:
                         logger.error(f"[WebSocket] Error watching OHLCV for {symbol}: {e}")
-                        await websocket.send_json({
-                            "action": "error",
-                            "message": f"OHLCV Error: {str(e)}"
-                        })
+                        try:
+                            await websocket.send_json({
+                                "action": "error",
+                                "message": f"OHLCV Error: {str(e)}"
+                            })
+                        except (WebSocketDisconnect, RuntimeError):
+                            pass
 
                 tasks["ohlcv"] = asyncio.create_task(stream_ohlcv())
 
@@ -125,16 +135,21 @@ async def chart_stream(websocket: WebSocket):
                             })
                     except asyncio.CancelledError:
                         logger.info(f"[WebSocket] Stopped watching Orderbook for {symbol}")
+                    except (WebSocketDisconnect, RuntimeError):
+                        pass
                     except Exception as e:
                         logger.error(f"[WebSocket] Error watching Orderbook for {symbol}: {e}")
-                        await websocket.send_json({
-                            "action": "error",
-                            "message": f"Orderbook Error: {str(e)}"
-                        })
+                        try:
+                            await websocket.send_json({
+                                "action": "error",
+                                "message": f"Orderbook Error: {str(e)}"
+                            })
+                        except (WebSocketDisconnect, RuntimeError):
+                            pass
 
                 tasks["orderbook"] = asyncio.create_task(stream_orderbook())
 
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, RuntimeError):
         for t in tasks.values():
             if t:
                 t.cancel()
