@@ -1,4 +1,4 @@
-import { BASE_URL } from './client';
+
 
 type NotificationCallback = (notification: any) => void;
 type BotStateCallback = (bots: any[]) => void;
