@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Mail, Lock, Loader2, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router';
+import { authService } from '../../services/api/auth';
 
 export const RegisterModal = ({ onClose, onSwitchToLogin }: { onClose: () => void, onSwitchToLogin: () => void }) => {
   const [email, setEmail] = useState('');
@@ -24,30 +25,12 @@ export const RegisterModal = ({ onClose, onSwitchToLogin }: { onClose: () => voi
 
     try {
       // 1. Register User
-      const registerRes = await fetch('http://localhost:8000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const registerData = await registerRes.json();
-      if (!registerRes.ok) {
-        throw new Error(registerData.detail || 'Registration failed');
-      }
+      await authService.register({ email, password });
 
       // 2. Automatically Login
-      const loginRes = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const loginData = await authService.login({ email, password });
 
-      const loginData = await loginRes.json();
-      if (!loginRes.ok) {
-        throw new Error('Failed to auto-login after registration');
-      }
-
-      login(loginData.access_token);
+      await login(loginData.access_token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);

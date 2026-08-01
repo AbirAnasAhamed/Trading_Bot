@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Mail, Lock, Loader2, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router';
+import { authService } from '../../services/api/auth';
 
 export const LoginModal = ({ onClose, onSwitchToRegister }: { onClose: () => void, onSwitchToRegister: () => void }) => {
   const [email, setEmail] = useState('');
@@ -17,19 +18,8 @@ export const LoginModal = ({ onClose, onSwitchToRegister }: { onClose: () => voi
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
-      }
-
-      login(data.access_token);
+      const data = await authService.login({ email, password });
+      await login(data.access_token);
       navigate('/dashboard'); // Redirect to dashboard
     } catch (err: any) {
       setError(err.message);
