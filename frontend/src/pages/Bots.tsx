@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Settings as SettingsIcon, Trash2, Loader2, Play, Pause, Square, PlayCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
+import { notificationSocket } from '../services/api/notificationSocketService';
 interface BotState {
   bot_id: string;
   is_running: boolean;
@@ -38,9 +38,15 @@ export const Bots: React.FC = () => {
 
   useEffect(() => {
     fetchBots();
-    // Poll every 5 seconds to keep it live
-    const interval = setInterval(fetchBots, 5000);
-    return () => clearInterval(interval);
+    
+    // Subscribe to real-time bot state updates via WebSocket
+    const unsubscribe = notificationSocket.onBotStateUpdate((updatedBots) => {
+      setBots(updatedBots);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [fetchBots]);
 
   const handleDelete = async (bot_name: string) => {

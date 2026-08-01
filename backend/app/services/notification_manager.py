@@ -26,8 +26,8 @@ class NotificationService:
             await session.commit()
             await session.refresh(notification)
             
-            # Broadcast via websocket
             notification_data = {
+                "ws_type": "notification",
                 "id": notification.id,
                 "user_id": notification.user_id,
                 "message": notification.message,
@@ -38,3 +38,14 @@ class NotificationService:
             await ws_manager.send_personal_message(notification_data, user_id)
             
             return notification
+
+    @staticmethod
+    async def broadcast_bot_state(user_id: int):
+        from app.core.bot_manager import bot_manager
+        
+        bots = bot_manager.get_all_bots()
+        payload = {
+            "ws_type": "bot_state",
+            "data": bots
+        }
+        await ws_manager.send_personal_message(payload, user_id)

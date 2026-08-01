@@ -1,11 +1,13 @@
 import { BASE_URL } from './client';
 
 type NotificationCallback = (notification: any) => void;
+type BotStateCallback = (bots: any[]) => void;
 
 class NotificationSocketService {
   private socket: WebSocket | null = null;
   private token: string | null = null;
   private callbacks: NotificationCallback[] = [];
+  private botStateCallbacks: BotStateCallback[] = [];
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -24,10 +26,14 @@ class NotificationSocketService {
 
     this.socket.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
-        this.callbacks.forEach(cb => cb(data));
+        const payload = JSON.parse(event.data);
+        if (payload.ws_type === 'bot_state') {
+          this.botStateCallbacks.forEach(cb => cb(payload.data));
+        } else {
+          this.callbacks.forEach(cb => cb(payload));
+        }
       } catch (e) {
-        console.error('Error parsing notification data', e);
+        console.error('Error parsing WebSocket data', e);
       }
     };
 
@@ -62,12 +68,20 @@ class NotificationSocketService {
       this.socket = null;
     }
     this.callbacks = [];
+    this.botStateCallbacks = [];
   }
 
   onNotification(callback: NotificationCallback) {
     this.callbacks.push(callback);
     return () => {
       this.callbacks = this.callbacks.filter(cb => cb !== callback);
+    };
+  }
+
+  onBotStateUpdate(callback: BotStateCallback) {
+    this.botStateCallbacks.push(callback);
+    return () => {
+      this.botStateCallbacks = this.botStateCallbacks.filter(cb => cb !== callback);
     };
   }
 }

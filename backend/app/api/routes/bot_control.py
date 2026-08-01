@@ -85,6 +85,7 @@ async def start_bot(
         return {"message": "Bot is already running or could not be started"}
         
     await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' started successfully", "success")
+    await NotificationService.broadcast_bot_state(current_user.id)
     return {"message": "Bot started"}
 
 class StopBotRequest(BaseModel):
@@ -98,6 +99,7 @@ async def stop_bot(req: StopBotRequest, current_user: User = Depends(get_current
         return {"message": "Bot not found or already stopped"}
         
     await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' stopped", "info")
+    await NotificationService.broadcast_bot_state(current_user.id)
     return {"message": "Bot stopped"}
 
 @router.post("/pause")
@@ -107,6 +109,7 @@ async def pause_bot(req: StopBotRequest, current_user: User = Depends(get_curren
         await NotificationService.create_notification(current_user.id, f"Failed to pause bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found or already paused"}
     await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' paused", "info")
+    await NotificationService.broadcast_bot_state(current_user.id)
     return {"message": "Bot paused"}
 
 @router.post("/resume")
@@ -116,6 +119,7 @@ async def resume_bot(req: StopBotRequest, current_user: User = Depends(get_curre
         await NotificationService.create_notification(current_user.id, f"Failed to resume bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found or already running"}
     await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' resumed", "success")
+    await NotificationService.broadcast_bot_state(current_user.id)
     return {"message": "Bot resumed"}
 
 @router.post("/delete")
@@ -125,4 +129,5 @@ async def delete_bot(req: StopBotRequest, current_user: User = Depends(get_curre
         await NotificationService.create_notification(current_user.id, f"Failed to delete bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found"}
     await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' deleted", "info")
+    await NotificationService.broadcast_bot_state(current_user.id)
     return {"message": "Bot deleted"}
