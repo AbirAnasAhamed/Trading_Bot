@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import status, bot_control, system, auth, exchange_keys, trades, notifications
+from app.api.routes import status, bot_control, system, auth, exchange_keys, trades, notifications, bot_details
 from app.api.ws import ccxt_stream, notifications as notifications_ws
 from app.db.database import create_tables
 from app.db.timescale import setup_hyper_tables
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(status.router, prefix="/api/status", tags=["Status"])
 app.include_router(bot_control.router, prefix="/api/bot", tags=["Bot Control"])
+app.include_router(bot_details.router, prefix="/api/bot", tags=["Bot Details"])
 app.include_router(ccxt_stream.router, prefix="/api/ws", tags=["WebSocket Data Stream"])
 app.include_router(notifications_ws.router, prefix="/api/ws/notifications", tags=["WebSocket Notifications"])
 app.include_router(system.router, prefix="/api/system", tags=["System & Background Tasks"])

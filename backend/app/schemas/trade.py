@@ -5,6 +5,7 @@ class TradeHistoryBase(BaseModel):
     symbol: str
     trade_type: str
     execution_type: str
+    bot_id: str | None = None
     price: float
     amount: float
     pnl: float = 0.0

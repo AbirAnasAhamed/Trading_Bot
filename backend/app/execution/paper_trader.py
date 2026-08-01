@@ -6,7 +6,9 @@ from app.models.schema import TradeHistory
 logger = get_logger(__name__)
 
 class PaperTrader(BaseTrader):
-    def __init__(self, initial_balance: float = 10000.0):
+    def __init__(self, bot_id: str, initial_balance: float = 10000.0):
+        self.bot_id = bot_id
+        self.initial_balance = initial_balance
         self.usdt_balance = initial_balance
         self.crypto_balance = 0.0
         
@@ -36,8 +38,12 @@ class PaperTrader(BaseTrader):
                 symbol=symbol,
                 trade_type=trade_type,
                 execution_type='paper',
+                bot_id=self.bot_id,
                 price=price,
                 amount=amount
             )
             session.add(trade)
             await session.commit()
+
+    async def get_pnl(self) -> float:
+        return self.usdt_balance - self.initial_balance

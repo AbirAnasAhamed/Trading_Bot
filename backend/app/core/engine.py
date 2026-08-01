@@ -18,6 +18,7 @@ class BotEngine:
         self._task = None
         self._heartbeat_task = None
         self.config = {}
+        self.current_pnl = 0.0
 
     async def _handle_data(self, data: dict):
         if not self.is_paused and self.strategy:
@@ -27,6 +28,13 @@ class BotEngine:
         while self.is_running:
             status = "Paused" if self.is_paused else "Running"
             logger.info(f"💓 Heartbeat: Bot {self.bot_id} is currently {status}.")
+            
+            if self.trader:
+                self.current_pnl = await self.trader.get_pnl()
+                
+            from app.services.notification_manager import NotificationService
+            await NotificationService.broadcast_bot_state_to_all()
+            
             await asyncio.sleep(5)
 
     async def start(self, symbol: str = None, mode: str = None, exchange_id: str = None, api_key: str = None, api_secret: str = None, wall_multiplier: float = 3.0, trade_amount: float = 0.01, min_wall_volume: float = 10000.0, take_profit: float = 2.0, stop_loss: float = 1.0):
@@ -66,9 +74,9 @@ class BotEngine:
         
         # 1. Initialize Trader
         if mode == 'real':
-            self.trader = RealTrader(exchange_id=exchange_id, api_key=api_key, api_secret=api_secret)
+            self.trader = RealTrader(bot_id=self.bot_id, exchange_id=exchange_id, api_key=api_key, api_secret=api_secret)
         else:
-            self.trader = PaperTrader()
+            self.trader = PaperTrader(bot_id=self.bot_id)
             
         # 2. Initialize Strategy with Trader
         self.strategy = L2WallDetector(

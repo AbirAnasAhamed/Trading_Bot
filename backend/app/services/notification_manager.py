@@ -49,3 +49,18 @@ class NotificationService:
             "data": bots
         }
         await ws_manager.send_personal_message(payload, user_id)
+
+    @staticmethod
+    async def broadcast_bot_state_to_all():
+        from app.core.bot_manager import bot_manager
+        
+        bots = bot_manager.get_all_bots()
+        payload = {
+            "ws_type": "bot_state",
+            "data": bots
+        }
+        
+        # Iterate through list of keys to avoid runtime dict modification errors
+        active_users = list(ws_manager.active_connections.keys())
+        for u_id in active_users:
+            await ws_manager.send_personal_message(payload, u_id)

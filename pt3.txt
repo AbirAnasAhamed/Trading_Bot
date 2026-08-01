@@ -1,0 +1,6 @@
+3. **Advanced Bot Configurations:**
+   - **বর্তমান অবস্থা:** ফ্রন্টএন্ডের `DeployBotModal.tsx`-এ একটি **"Advanced"** ট্যাব আছে, কিন্তু সেখানে লেখা আছে *"Advanced AI optimization and backtesting parameters will be available in the upcoming update."*
+   - **বাকি থাকা কাজ:** ব্যাকএন্ডের `BotEngine` ভবিষ্যতে আরও অ্যাডভান্সড কনফিগারেশন নিতে পারবে, যার জন্য ফ্রন্টএন্ডের এই ট্যাবটি পরে ডেভেলপ করতে হবে।
+
+4. **Bot Status Polling vs WebSockets (Performance Improvement):**
+   - **বর্তমান অবস্থা:** বটের স্ট

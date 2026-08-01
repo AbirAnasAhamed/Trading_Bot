@@ -28,6 +28,7 @@ class TradeHistory(Base):
     
     trade_type = Column(String, nullable=False) # 'buy' or 'sell'
     execution_type = Column(String, nullable=False) # 'paper' or 'real'
+    bot_id = Column(String, index=True, nullable=True) # ID of the bot that executed this trade
     price = Column(Float, nullable=False)
     amount = Column(Float, nullable=False)
     pnl = Column(Float, default=0.0)

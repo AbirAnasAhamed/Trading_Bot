@@ -17,7 +17,8 @@ class BotManager:
                 "is_running": engine.is_running,
                 "is_paused": engine.is_paused,
                 "symbol": engine.config.get('symbol', 'Unknown'),
-                "mode": engine.config.get('mode', 'paper')
+                "mode": engine.config.get('mode', 'paper'),
+                "current_pnl": getattr(engine, 'current_pnl', 0.0)
             }
             bots_info.append(info)
         return bots_info
@@ -31,7 +32,8 @@ class BotManager:
             "is_running": engine.is_running,
             "is_paused": engine.is_paused,
             "symbol": engine.config.get('symbol', 'Unknown'),
-            "mode": engine.config.get('mode', 'paper')
+            "mode": engine.config.get('mode', 'paper'),
+            "current_pnl": getattr(engine, 'current_pnl', 0.0)
         }
 
     async def start_bot(self, bot_id: str, symbol: str=None, mode: str=None, exchange_id: str=None, api_key: str=None, api_secret: str=None, wall_multiplier: float=3.0, trade_amount: float=0.01, min_wall_volume: float=10000.0, take_profit: float=2.0, stop_loss: float=1.0):

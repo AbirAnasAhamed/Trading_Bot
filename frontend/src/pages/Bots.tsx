@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Settings as SettingsIcon, Trash2, Loader2, Play, Pause, Square, PlayCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { notificationSocket } from '../services/api/notificationSocketService';
+import { BotDetailsModal } from '../features/bots/components/BotDetailsModal';
 interface BotState {
   bot_id: string;
   is_running: boolean;
   is_paused: boolean;
   symbol: string;
   mode: string;
+  current_pnl?: number;
 }
 
 export const Bots: React.FC = () => {
@@ -17,6 +19,7 @@ export const Bots: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [startStopId, setStartStopId] = useState<string | null>(null);
+  const [selectedBotId, setSelectedBotId] = useState<string | null>(null);
 
   const fetchBots = useCallback(async () => {
     try {
@@ -173,13 +176,22 @@ export const Bots: React.FC = () => {
                 <p className="font-medium text-white mb-4">L2 Wallhunter</p>
                 
                 <p className="text-sm text-gray-400 mb-1">Current PnL</p>
-                <p className="font-bold text-lg text-gray-300">
-                  ---
+                <p className={`font-bold text-lg ${
+                  bot.current_pnl && bot.current_pnl > 0 
+                    ? 'text-green-500' 
+                    : bot.current_pnl && bot.current_pnl < 0 
+                      ? 'text-red-500' 
+                      : 'text-gray-300'
+                }`}>
+                  {bot.current_pnl !== undefined ? `$${bot.current_pnl.toFixed(2)}` : '---'}
                 </p>
               </div>
               
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-panel relative z-10">
-                <button className="flex items-center text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                <button 
+                  onClick={() => setSelectedBotId(bot.bot_id)}
+                  className="flex items-center text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                >
                   <SettingsIcon className="w-4 h-4 mr-2" />
                   Details
                 </button>
@@ -246,6 +258,15 @@ export const Bots: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Bot Details Modal */}
+      {selectedBotId && (
+        <BotDetailsModal 
+          botId={selectedBotId} 
+          token={token!} 
+          onClose={() => setSelectedBotId(null)} 
+        />
+      )}
     </div>
   );
 };

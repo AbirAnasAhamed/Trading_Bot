@@ -8,7 +8,8 @@ from app.models.schema import TradeHistory
 logger = get_logger(__name__)
 
 class RealTrader(BaseTrader):
-    def __init__(self, exchange_id: str, api_key: str, api_secret: str):
+    def __init__(self, bot_id: str, exchange_id: str, api_key: str, api_secret: str):
+        self.bot_id = bot_id
         try:
             exchange_class = getattr(ccxt, exchange_id)
         except AttributeError:
@@ -53,11 +54,16 @@ class RealTrader(BaseTrader):
                 symbol=symbol,
                 trade_type=trade_type,
                 execution_type='real',
+                bot_id=self.bot_id,
                 price=price,
                 amount=amount
             )
             session.add(trade)
             await session.commit()
             
+    async def get_pnl(self) -> float:
+        # In a real trading bot, you would track initial balance or query exchange balance.
+        return 0.0
+
     async def close(self):
         await self.exchange.close()
