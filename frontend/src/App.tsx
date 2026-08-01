@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Bots } from './pages/Bots';
+import { Backtest } from './pages/Backtest';
+import { MLStudio } from './pages/MLStudio';
 import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import { HFTradingBot } from './pages/HFTradingBot';
@@ -42,6 +44,8 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="bots" element={<Bots />} />
         <Route path="hf-trading" element={<HFTradingBot />} />
+        <Route path="backtest" element={<Backtest />} />
+        <Route path="ml-studio" element={<MLStudio />} />
         <Route path="history" element={<History />} />
         <Route path="settings" element={<Settings />} />
       </Route>

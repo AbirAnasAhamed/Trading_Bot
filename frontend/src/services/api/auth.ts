@@ -18,5 +18,16 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
+  },
+
+  updateProfile: (data: { email?: string; password?: string }): Promise<User> => {
+    return apiClient<User>('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteAccount: (): Promise<void> => {
+    return apiClient<void>('/auth/me', { method: 'DELETE' });
   }
 };

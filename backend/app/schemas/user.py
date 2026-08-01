@@ -10,7 +10,8 @@ class UserCreate(UserBase):
     password: str
 
 # Properties to receive via API on update
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
     password: Optional[str] = None
 
 class UserInDBBase(UserBase):

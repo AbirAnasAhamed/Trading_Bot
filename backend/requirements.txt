@@ -14,3 +14,4 @@ redis==5.0.4
 passlib[bcrypt]==1.7.4
 bcrypt==3.2.2
 python-jose[cryptography]
+psutil==6.0.0

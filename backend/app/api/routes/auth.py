@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import timedelta
@@ -6,10 +6,9 @@ from typing import Any
 
 from app.db.database import get_db
 from app.models.schema import User
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserUpdate, UserResponse, Token
 from app.core.security import get_password_hash, verify_password, create_access_token, encrypt_data
 from app.api.deps import get_current_active_user
-from app.core.config import settings
 from app.core.config import settings
 
 router = APIRouter()
@@ -67,4 +66,38 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)) -
     """
     return current_user
 
+@router.put("/me", response_model=UserResponse)
+async def update_user_me(
+    user_in: UserUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    """
+    Update own user profile.
+    """
+    if user_in.email:
+        result = await db.execute(select(User).where(User.email == user_in.email))
+        existing_user = result.scalars().first()
+        if existing_user and existing_user.id != current_user.id:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        current_user.email = user_in.email
+        
+    if user_in.password:
+        current_user.hashed_password = get_password_hash(user_in.password)
+        
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user
 
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_me(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete own user profile.
+    """
+    await db.delete(current_user)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
