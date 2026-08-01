@@ -67,6 +67,8 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - REDIS_URL=redis://redis:6379/0
+      - C_FORCE_ROOT=true
+      - CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP=True
     volumes:
       - ./backend:/app
     depends_on:

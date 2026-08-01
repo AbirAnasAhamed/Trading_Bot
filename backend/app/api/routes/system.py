@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List
 from celery.result import AsyncResult
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +23,8 @@ class MLTrainingRequest(BaseModel):
     model_name: str
     epochs: int
     batch_size: int
+    
+    model_config = ConfigDict(protected_namespaces=())
 
 @router.post("/test-backtest")
 async def trigger_backtest(request: BacktestRequest, current_user: User = Depends(get_current_active_user)):

@@ -12,7 +12,8 @@ app = FastAPI(title="Crypto Algo Trading Bot API")
 
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return "/api/bot/state" not in record.getMessage()
+        msg = record.getMessage()
+        return "/api/bot/state" not in msg and "/api/status/health" not in msg
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
