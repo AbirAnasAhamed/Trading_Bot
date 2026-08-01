@@ -1,5 +1,5 @@
 // Centralized API Client for reduced memory footprint (reusing base URL and headers logic)
-export const BASE_URL = 'http://localhost:8000/api';
+export const BASE_URL = '/api';
 
 export const apiClient = async <T>(
   endpoint: string, 

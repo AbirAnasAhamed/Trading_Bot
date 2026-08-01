@@ -16,8 +16,11 @@ class NotificationSocketService {
     if (this.socket?.readyState === WebSocket.OPEN) return;
     
     this.token = token;
-    const wsUrl = BASE_URL.replace('http', 'ws');
-    this.socket = new WebSocket(`${wsUrl}/ws/notifications/?token=${token}`);
+    
+    // Construct dynamic websocket URL based on window.location
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/api/ws/notifications/?token=${token}`;
+    this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => {
       console.log('Notification WebSocket connected');

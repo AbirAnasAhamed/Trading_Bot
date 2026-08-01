@@ -25,7 +25,8 @@ export const useChartWebSocket = () => {
 
   useEffect(() => {
     // Connect to WebSocket
-    ws.current = new WebSocket('ws://localhost:8000/api/ws/chart-stream');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws.current = new WebSocket(`${protocol}//${window.location.host}/api/ws/chart-stream`);
 
     ws.current.onopen = () => {
       setIsConnected(true);
