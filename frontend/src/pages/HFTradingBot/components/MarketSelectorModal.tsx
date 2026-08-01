@@ -75,17 +75,17 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div 
-        className="bg-[#0f111a] border border-gray-800 rounded-xl w-full max-w-3xl h-[600px] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-panel border border-panel rounded-xl w-full max-w-3xl h-[600px] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Bar */}
-        <div className="p-4 border-b border-gray-800">
+        <div className="p-4 border-b border-panel bg-primary">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" />
             <input
               ref={inputRef}
               type="text"
-              className="w-full bg-[#161822] border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-panel border border-panel rounded-lg pl-10 pr-4 py-3 text-primary placeholder:text-secondary focus:outline-none focus:border-blue-500 transition-colors"
               placeholder={`Search markets (e.g. BTC/USDT)...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -97,8 +97,8 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
         {/* Content Area */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left Panel: Exchanges */}
-          <div className="w-1/3 border-r border-gray-800 flex flex-col">
-            <div className="px-4 py-3 text-xs font-bold text-gray-500 tracking-wider">
+          <div className="w-1/3 border-r border-panel flex flex-col bg-panel">
+            <div className="px-4 py-3 text-xs font-bold text-secondary tracking-wider">
               EXCHANGES
             </div>
             <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
@@ -112,12 +112,12 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
                       inputRef.current?.focus();
                     }}
                     className={`w-full text-left px-4 py-3 flex items-center transition-colors
-                      ${isSelected ? 'bg-blue-600/10' : 'hover:bg-white/5'}
+                      ${isSelected ? 'bg-blue-500/10' : 'hover:bg-[var(--border-color)]'}
                     `}
                   >
                     {/* Blue pill indicator for selected */}
                     <div className={`w-1 h-5 rounded-full mr-3 ${isSelected ? 'bg-blue-500' : 'bg-transparent'}`} />
-                    <span className={`font-semibold ${isSelected ? 'text-blue-500' : 'text-gray-300'}`}>
+                    <span className={`font-semibold ${isSelected ? 'text-blue-500' : 'text-secondary'}`}>
                       {ex.charAt(0).toUpperCase() + ex.slice(1)}
                     </span>
                   </button>
@@ -127,14 +127,14 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
           </div>
 
           {/* Right Panel: Trading Pairs */}
-          <div className="w-2/3 flex flex-col bg-[#13151e]">
-            <div className="px-6 py-3 text-xs font-bold text-gray-500 tracking-wider uppercase border-b border-gray-800/50">
+          <div className="w-2/3 flex flex-col bg-primary">
+            <div className="px-6 py-3 text-xs font-bold text-secondary tracking-wider uppercase border-b border-panel">
               TRADING PAIRS ({filteredMarkets.length})
             </div>
             
-            <div className="flex-1 overflow-y-auto py-2" ref={listRef} style={{ scrollbarWidth: 'thin', scrollbarColor: '#2d3748 transparent' }}>
+            <div className="flex-1 overflow-y-auto py-2" ref={listRef} style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--border-color) transparent' }}>
               {filteredMarkets.length === 0 ? (
-                <div className="text-gray-500 text-center mt-10">No markets found.</div>
+                <div className="text-secondary text-center mt-10">No markets found.</div>
               ) : (
                 filteredMarkets.map((market, idx) => {
                   const [base, quote] = market.split('/');
@@ -148,15 +148,15 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
                       }}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={`px-6 py-3 cursor-pointer flex items-center transition-colors
-                        ${isActive ? 'bg-[#1e2230]' : 'hover:bg-[#1a1d27]'}
+                        ${isActive ? 'bg-[var(--border-color)]' : 'hover:bg-[var(--border-color)]'}
                       `}
                     >
-                      <span className="font-bold text-white text-base">{base}</span>
-                      <span className="text-gray-500 font-medium ml-1">/{quote}</span>
+                      <span className="font-bold text-primary text-base">{base}</span>
+                      <span className="text-secondary font-medium ml-1">/{quote}</span>
                       
                       {/* Optional FUT Badge if market ends with perpetual/futures indicator */}
                       {(market.includes(':') || market.endsWith('PERP')) && (
-                        <span className="ml-3 bg-blue-900/40 text-blue-400 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        <span className="ml-3 bg-blue-500/20 text-blue-500 text-[10px] font-bold px-1.5 py-0.5 rounded">
                           FUT
                         </span>
                       )}
@@ -169,7 +169,7 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-[#0a0b10] border-t border-gray-800 flex justify-between items-center text-xs text-gray-500">
+        <div className="px-6 py-3 bg-panel border-t border-panel flex justify-between items-center text-xs text-secondary">
           <span>Use ↑ ↓ arrows to navigate</span>
           <span>Enter to select</span>
         </div>

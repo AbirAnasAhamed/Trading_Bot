@@ -91,7 +91,7 @@ export const Backtest: React.FC = () => {
             <select 
               value={strategy}
               onChange={(e) => setStrategy(e.target.value)}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
             >
               <option value="MACD Crossover">MACD Crossover</option>
               <option value="RSI Reversal">RSI Reversal</option>
@@ -103,7 +103,7 @@ export const Backtest: React.FC = () => {
             <select 
               value={pair}
               onChange={(e) => setPair(e.target.value)}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
             >
               <option value="BTC/USDT">BTC/USDT</option>
               <option value="ETH/USDT">ETH/USDT</option>
@@ -115,7 +115,7 @@ export const Backtest: React.FC = () => {
             <select 
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-brand"
             >
               <option value="15m">15m</option>
               <option value="1h">1h</option>

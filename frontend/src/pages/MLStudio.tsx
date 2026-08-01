@@ -100,7 +100,7 @@ export const MLStudio: React.FC = () => {
             <select 
               value={modelName}
               onChange={(e) => setModelName(e.target.value)}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500"
             >
               <option value="Orderbook-LSTM (Sequence)">Orderbook-LSTM (Sequence)</option>
               <option value="Transformer (Attention)">Transformer (Attention)</option>
@@ -113,7 +113,7 @@ export const MLStudio: React.FC = () => {
               type="number" 
               value={epochs}
               onChange={(e) => setEpochs(Number(e.target.value))}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500" 
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500" 
             />
           </div>
           <div>
@@ -121,7 +121,7 @@ export const MLStudio: React.FC = () => {
             <select 
               value={batchSize}
               onChange={(e) => setBatchSize(Number(e.target.value))}
-              className="w-full bg-[#1e2330] border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary focus:outline-none focus:border-purple-500"
             >
               <option value={32}>32</option>
               <option value={64}>64</option>
