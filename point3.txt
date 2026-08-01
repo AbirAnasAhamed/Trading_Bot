@@ -1,8 +1,0 @@
- ছোটখাটো কাজগুলো এখনো বাকি (বা শুধুমাত্র UI-তে ডিজাইন করা আছে কিন্তু ডাইনামিক নয়):
-
-### ✅ যে ফিচারগুলো ফ্রন্টএন্ডে সফলভাবে ইন্টিগ্রেট করা আছে:
-1. **Bot Management (`bot_control.py`)**: বট Start, Stop, Pause, Resume, Delete এবং Status দেখার সব API ফ্রন্টএন্ডের `Bots.tsx` এবং `DeployBotModal.tsx` এ ব্যবহার করা হয়েছে।
-2. **WebSockets (`ccxt_stream.py`)**: লাইভ চার্ট (OHLCV), Orderbook, মার্কেট লিস্ট এবং রিয়েল-টাইম নোটিফিকেশন ফ্রন্টএন্ডের `HFTradingBot` (useChartWebSocket) এ পারফেক্টলি কাজ করছ
-<truncated 3484 bytes>
-্সড কনফিগারেশন নিতে পারবে, যার জন্য ফ্রন্টএন্ডের এই ট্যাবটি পরে ডেভেলপ করতে হবে।
-
