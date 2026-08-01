@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import status, bot_control, system, auth, exchange_keys
+from app.api.routes import status, bot_control, system, auth, exchange_keys, trades
 from app.api.ws import ccxt_stream
 from app.db.database import create_tables
 from app.db.timescale import setup_hyper_tables
@@ -30,6 +30,7 @@ app.include_router(bot_control.router, prefix="/api/bot", tags=["Bot Control"])
 app.include_router(ccxt_stream.router, prefix="/api/ws", tags=["WebSocket Data Stream"])
 app.include_router(system.router, prefix="/api/system", tags=["System & Background Tasks"])
 app.include_router(exchange_keys.router, prefix="/api/exchange-keys", tags=["Exchange API Keys"])
+app.include_router(trades.router, prefix="/api/trades", tags=["Trade History"])
 
 @app.on_event("startup")
 async def startup_event():
