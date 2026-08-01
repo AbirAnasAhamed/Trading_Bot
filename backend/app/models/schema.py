@@ -45,6 +45,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    notifications_enabled = Column(Boolean, default=True, nullable=False)
     
     exchange_keys = relationship("ExchangeKey", back_populates="user", cascade="all, delete-orphan")
 
@@ -90,3 +91,16 @@ class BacktestResult(Base):
     # Context
     status = Column(String, default="running") # running, completed, failed
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    message = Column(String, nullable=False)
+    type = Column(String, default="info") # info, success, warning, error
+    is_read = Column(Boolean, default=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    user = relationship("User")
+

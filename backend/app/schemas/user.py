@@ -13,11 +13,13 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
+    notifications_enabled: Optional[bool] = None
 
 class UserInDBBase(UserBase):
     id: int
     is_active: bool
     is_superuser: bool
+    notifications_enabled: bool
 
     class Config:
         from_attributes = True

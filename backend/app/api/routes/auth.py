@@ -85,6 +85,9 @@ async def update_user_me(
     if user_in.password:
         current_user.hashed_password = get_password_hash(user_in.password)
         
+    if user_in.notifications_enabled is not None:
+        current_user.notifications_enabled = user_in.notifications_enabled
+        
     db.add(current_user)
     await db.commit()
     await db.refresh(current_user)

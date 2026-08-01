@@ -110,29 +110,29 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#12141c] border border-panel rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-panel border border-panel rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-panel bg-[#0d0f15]">
+        <div className="flex items-center justify-between p-5 border-b border-panel bg-primary">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <Rocket className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Deploy Wallhunter Bot</h2>
-              <p className="text-xs text-gray-400">Configure parameters and launch strategy</p>
+              <h2 className="text-xl font-bold text-primary">Deploy Wallhunter Bot</h2>
+              <p className="text-xs text-secondary">Configure parameters and launch strategy</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-white transition-colors p-1"
+            className="text-gray-500 hover:text-primary transition-colors p-1"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex px-4 pt-2 gap-1 bg-[#0d0f15] border-b border-panel">
+        <div className="flex px-4 pt-2 gap-1 bg-primary border-b border-panel">
           <button 
             onClick={() => setActiveTab('basic')}
             className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
@@ -168,7 +168,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
             className={`flex-1 py-3 px-2 text-xs font-bold uppercase transition-all rounded-t-lg ${
               activeTab === 'advanced' 
                 ? 'text-[#00ff88] bg-[#00ff88]/5 border border-b-0 border-[#00ff88]/20' 
-                : 'text-gray-500 hover:text-gray-300 border border-transparent border-b-0'
+                : 'text-gray-500 hover:text-gray-700 border border-transparent border-b-0'
             }`}
           >
             Advanced
@@ -208,8 +208,8 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
               <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20">
                 <Rocket className="w-8 h-8 text-blue-500 opacity-50" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Advanced Configs</h3>
-              <p className="text-gray-400 text-sm max-w-sm">
+              <h3 className="text-lg font-bold text-primary mb-2">Advanced Configs</h3>
+              <p className="text-secondary text-sm max-w-sm">
                 Advanced AI optimization and backtesting parameters will be available in the upcoming update.
               </p>
             </div>
@@ -228,7 +228,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-panel bg-[#0d0f15] flex justify-end gap-3 items-center">
+        <div className="p-5 border-t border-panel bg-primary flex justify-end gap-3 items-center">
           {mode === 'real' && configuredExchanges.length === 0 && !loadingExchanges && (
             <p className="text-red-400 text-sm flex-1">
               No API Keys found! Please <Link to="/settings" className="underline font-bold text-brand">configure in Settings</Link>.
@@ -237,7 +237,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
           <button 
             onClick={onClose}
             disabled={isDeploying}
-            className="px-5 py-2.5 rounded-lg font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="px-5 py-2.5 rounded-lg font-bold text-gray-500 hover:text-primary hover:bg-gray-200 transition-colors"
           >
             Cancel
           </button>

@@ -4,7 +4,8 @@ import random
 from app.core.celery_app import celery_app
 from app.core.logger import get_logger
 from app.db.database import AsyncSessionLocal
-from app.models.schema import MLModel, BacktestResult
+from app.models.schema import MLModel, BacktestResult, Notification
+from datetime import datetime, timedelta
 
 logger = get_logger(__name__)
 
@@ -32,6 +33,14 @@ async def save_backtest_result(strategy: str, pair: str, timeframe: str, pnl: fl
         )
         session.add(result)
         await session.commit()
+
+async def delete_old_notifications_db(days: int = 30):
+    async with AsyncSessionLocal() as session:
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        from sqlalchemy import delete
+        await session.execute(delete(Notification).where(Notification.created_at < cutoff_date))
+        await session.commit()
+
 
 @celery_app.task(bind=True, name="train_ml_model")
 def train_ml_model(self, model_name: str, parameters: dict):
@@ -65,3 +74,10 @@ def run_backtest(self, strategy: str, pair: str, timeframe: str):
     
     logger.info("Backtest completed")
     return {"status": "success", "pnl": pnl, "trades": trades, "win_rate": win_rate}
+
+@celery_app.task(bind=True, name="cleanup_old_notifications")
+def cleanup_old_notifications(self):
+    logger.info("Starting cleanup of notifications older than 30 days")
+    asyncio.run(delete_old_notifications_db(30))
+    logger.info("Cleanup completed")
+    return {"status": "success"}

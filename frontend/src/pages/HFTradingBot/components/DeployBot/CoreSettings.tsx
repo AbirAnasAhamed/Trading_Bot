@@ -18,37 +18,37 @@ export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
 }) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-white border-b border-panel pb-2">Core Settings</h3>
+      <h3 className="text-lg font-bold text-primary border-b border-panel pb-2">Core Settings</h3>
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bot Name</label>
+          <label className="text-xs font-bold text-secondary uppercase tracking-wider">Bot Name</label>
           <input 
             type="text" 
             value={botName}
             onChange={(e) => setBotName(e.target.value)}
-            className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:border-blue-500 transition-colors"
             placeholder="e.g. BTC-Wallhunter-1"
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pair</label>
+          <label className="text-xs font-bold text-secondary uppercase tracking-wider">Pair</label>
           <input 
             type="text" 
             value={symbol}
             disabled
-            className="w-full bg-[#1a1c23] border border-panel rounded-lg px-3 py-2 text-gray-400 font-bold text-sm cursor-not-allowed"
+            className="w-full bg-panel border border-panel rounded-lg px-3 py-2 text-secondary font-bold text-sm cursor-not-allowed"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Execution Mode</label>
+          <label className="text-xs font-bold text-secondary uppercase tracking-wider">Execution Mode</label>
           <select 
             value={mode}
             onChange={(e) => setMode(e.target.value)}
-            className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+            className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
           >
             <option value="paper">Paper Trading (Simulated)</option>
             <option value="real">Real Trading (Live Funds)</option>
@@ -57,13 +57,13 @@ export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
         
         {mode === 'real' ? (
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+            <label className="text-xs font-bold text-secondary uppercase tracking-wider flex items-center justify-between">
               Exchange
             </label>
             <select 
               value={exchangeId}
               onChange={(e) => setExchangeId(e.target.value)}
-              className="w-full bg-[#0d0f15] border border-panel rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors capitalize"
+              className="w-full bg-primary border border-panel rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors capitalize"
             >
               {configuredExchanges.length === 0 ? (
                 <option value="" disabled>No API Keys found</option>
@@ -76,14 +76,14 @@ export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
           </div>
         ) : (
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Order Size</label>
+            <label className="text-xs font-bold text-secondary uppercase tracking-wider">Base Order Size</label>
             <div className="relative">
               <input 
                 type="number" 
                 step="0.01"
                 value={tradeAmount}
                 onChange={(e) => setTradeAmount(Number(e.target.value))}
-                className="w-full bg-[#0d0f15] border border-panel rounded-lg pl-3 pr-10 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+                className="w-full bg-primary border border-panel rounded-lg pl-3 pr-10 py-2 text-primary text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
               />
               <span className="absolute right-3 top-2 text-gray-500 text-sm">COIN</span>
             </div>
@@ -94,14 +94,14 @@ export const CoreSettings: React.FC<CoreSettingsProps> = memo(({
       {mode === 'real' && (
         <div className="grid grid-cols-1 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Base Order Size</label>
+            <label className="text-xs font-bold text-secondary uppercase tracking-wider">Base Order Size</label>
             <div className="relative">
               <input 
                 type="number" 
                 step="0.01"
                 value={tradeAmount}
                 onChange={(e) => setTradeAmount(Number(e.target.value))}
-                className="w-full bg-[#0d0f15] border border-panel rounded-lg pl-3 pr-10 py-2 text-white text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+                className="w-full bg-primary border border-panel rounded-lg pl-3 pr-10 py-2 text-primary text-sm focus:outline-none focus:border-[var(--color-brand)] transition-colors"
               />
               <span className="absolute right-3 top-2 text-gray-500 text-sm">COIN</span>
             </div>

@@ -3,6 +3,7 @@ export interface User {
   email: string;
   is_active: boolean;
   is_superuser: boolean;
+  notifications_enabled: boolean;
   created_at: string;
 }
 

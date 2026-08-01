@@ -9,6 +9,7 @@ from app.db.database import get_db
 from sqlalchemy.future import select
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.security import decrypt_data
+from app.services.notification_manager import NotificationService
 
 router = APIRouter()
 
@@ -80,8 +81,10 @@ async def start_bot(
     )
     
     if not success:
+        await NotificationService.create_notification(current_user.id, f"Failed to start bot '{req.bot_name}'", "error")
         return {"message": "Bot is already running or could not be started"}
         
+    await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' started successfully", "success")
     return {"message": "Bot started"}
 
 class StopBotRequest(BaseModel):
@@ -91,27 +94,35 @@ class StopBotRequest(BaseModel):
 async def stop_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
     success = await bot_manager.stop_bot(req.bot_name)
     if not success:
+        await NotificationService.create_notification(current_user.id, f"Failed to stop bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found or already stopped"}
         
+    await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' stopped", "info")
     return {"message": "Bot stopped"}
 
 @router.post("/pause")
 async def pause_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
     success = bot_manager.pause_bot(req.bot_name)
     if not success:
+        await NotificationService.create_notification(current_user.id, f"Failed to pause bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found or already paused"}
+    await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' paused", "info")
     return {"message": "Bot paused"}
 
 @router.post("/resume")
 async def resume_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
     success = bot_manager.resume_bot(req.bot_name)
     if not success:
+        await NotificationService.create_notification(current_user.id, f"Failed to resume bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found or already running"}
+    await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' resumed", "success")
     return {"message": "Bot resumed"}
 
 @router.post("/delete")
 async def delete_bot(req: StopBotRequest, current_user: User = Depends(get_current_active_user)):
     success = await bot_manager.delete_bot(req.bot_name)
     if not success:
+        await NotificationService.create_notification(current_user.id, f"Failed to delete bot '{req.bot_name}'", "warning")
         return {"message": "Bot not found"}
+    await NotificationService.create_notification(current_user.id, f"Bot '{req.bot_name}' deleted", "info")
     return {"message": "Bot deleted"}

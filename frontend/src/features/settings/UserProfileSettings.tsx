@@ -8,6 +8,7 @@ export const UserProfileSettings: React.FC = () => {
   
   const [email, setEmail] = useState(user?.email || '');
   const [newPassword, setNewPassword] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(user?.notifications_enabled ?? true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +20,10 @@ export const UserProfileSettings: React.FC = () => {
     setSuccess(false);
 
     try {
-      const dataToUpdate: { email?: string; password?: string } = {};
+      const dataToUpdate: { email?: string; password?: string; notifications_enabled?: boolean } = {};
       if (email !== user?.email) dataToUpdate.email = email;
       if (newPassword) dataToUpdate.password = newPassword;
+      if (notificationsEnabled !== user?.notifications_enabled) dataToUpdate.notifications_enabled = notificationsEnabled;
 
       if (Object.keys(dataToUpdate).length === 0) {
         setLoading(false);
@@ -113,11 +115,35 @@ export const UserProfileSettings: React.FC = () => {
               />
             </div>
           </div>
+          
+          <div className="pt-2">
+            <h4 className="text-sm font-medium text-primary mb-3">Preferences</h4>
+            <div className="flex items-center justify-between bg-background border border-panel rounded-lg p-4">
+              <div>
+                <p className="text-sm font-medium text-primary">In-App Notifications</p>
+                <p className="text-xs text-secondary mt-1">Receive alerts for bot activities and system events</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${
+                  notificationsEnabled ? 'bg-brand' : 'bg-gray-600'
+                }`}
+                style={{ backgroundColor: notificationsEnabled ? 'var(--color-brand)' : undefined }}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="pt-4 flex items-center space-x-3 border-t border-panel">
             <button 
               type="submit" 
-              disabled={loading || (email === user?.email && !newPassword)}
+              disabled={loading || (email === user?.email && !newPassword && notificationsEnabled === user?.notifications_enabled)}
               className="flex items-center px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:opacity-90 transition-opacity font-medium disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}

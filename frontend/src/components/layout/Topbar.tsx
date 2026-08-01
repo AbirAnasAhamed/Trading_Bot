@@ -5,7 +5,11 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileDrawer } from './ProfileDrawer';
 import { SystemHealthDropdown } from './SystemHealthDropdown';
+import { NotificationDropdown } from './NotificationDropdown';
 import { statusService } from '../../services/api/status';
+import { notificationService } from '../../services/api/notifications';
+import type { Notification } from '../../services/api/notifications';
+import { notificationSocket } from '../../services/api/notificationSocketService';
 import type { SystemHealthResponse } from '../../services/api/status';
 
 export const Topbar: React.FC = () => {
@@ -15,7 +19,9 @@ export const Topbar: React.FC = () => {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHealthOpen, setIsHealthOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [health, setHealth] = useState<SystemHealthResponse | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const fetchHealth = async () => {
     try {
@@ -37,6 +43,55 @@ export const Topbar: React.FC = () => {
     const interval = setInterval(fetchHealth, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  const loadNotifications = async () => {
+    try {
+      const data = await notificationService.getNotifications();
+      setNotifications(data);
+    } catch (e) {
+      console.error('Failed to load notifications', e);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (user?.notifications_enabled && token) {
+      loadNotifications();
+      
+      notificationSocket.connect(token);
+      const unsubscribe = notificationSocket.onNotification((newNotification) => {
+        setNotifications(prev => [newNotification, ...prev]);
+      });
+      
+      return () => {
+        unsubscribe();
+        notificationSocket.disconnect();
+      };
+    } else if (!user?.notifications_enabled) {
+        notificationSocket.disconnect();
+        setNotifications([]);
+    }
+  }, [user?.notifications_enabled]);
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (e) {
+      console.error('Failed to mark notification as read', e);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (e) {
+      console.error('Failed to mark all notifications as read', e);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const getPageTitle = (path: string) => {
     switch (path) {
@@ -84,9 +139,15 @@ export const Topbar: React.FC = () => {
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           
-          <button className="p-2 rounded-full text-secondary hover:bg-primary hover:text-primary transition-colors relative">
+          <button 
+            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            className={`p-2 rounded-full transition-colors relative ${isNotificationsOpen ? 'bg-panel text-primary' : 'text-secondary hover:bg-primary hover:text-primary'}`}
+            aria-label="Notifications"
+          >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse"></span>
+            )}
           </button>
           
           <button 
@@ -109,10 +170,17 @@ export const Topbar: React.FC = () => {
         health={health} 
       />
       
-      {/* Profile Drawer Overlay */}
       <ProfileDrawer 
         isOpen={isProfileOpen} 
         onClose={() => setIsProfileOpen(false)} 
+      />
+
+      <NotificationDropdown
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={handleMarkAsRead}
+        onMarkAllAsRead={handleMarkAllAsRead}
       />
     </>
   );
