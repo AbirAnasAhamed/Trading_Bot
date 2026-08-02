@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { tradeService } from '../services/api/trades';
-import type { Trade } from '../services/api/trades';
-import { Loader2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { tradeService } from '../../services/api/trades';
+import type { Trade } from '../../services/api/trades';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const History: React.FC = () => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   
   // Pagination state
   const [page, setPage] = useState(1);
@@ -31,17 +30,7 @@ export const History: React.FC = () => {
     fetchTrades(page);
   }, [page]);
 
-  const handleGenerateDummyTrades = async () => {
-    setIsGenerating(true);
-    try {
-      await tradeService.createDummyTrades(5);
-      await fetchTrades(page);
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate dummy trades');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
@@ -66,16 +55,15 @@ export const History: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-primary">Trade History</h2>
-        <button
-          onClick={handleGenerateDummyTrades}
-          disabled={isGenerating}
-          className="flex items-center px-4 py-2 bg-brand/10 text-brand rounded-lg hover:bg-brand/20 transition-colors disabled:opacity-50"
-          style={{ color: 'var(--color-brand)' }}
-        >
-          {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-          Generate Dummy Trades
-        </button>
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => window.history.back()}
+            className="p-2 bg-panel border border-panel rounded-lg hover:bg-primary transition-colors text-secondary hover:text-primary"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h2 className="text-xl font-bold text-primary">All Trade History</h2>
+        </div>
       </div>
 
       {error && (
@@ -87,7 +75,7 @@ export const History: React.FC = () => {
       <div className="bg-panel border border-panel rounded-xl shadow-sm overflow-hidden flex flex-col">
         {trades.length === 0 && !isLoading ? (
           <div className="p-8 text-center text-secondary">
-            No trades found. Generate some dummy trades to test.
+            No trades found.
           </div>
         ) : (
           <>

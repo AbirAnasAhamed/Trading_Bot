@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router';
-import { LayoutDashboard, Bot, History, Settings, TrendingUp, Network, ActivitySquare } from 'lucide-react';
+import { LayoutDashboard, Bot, Settings, TrendingUp, Network, ActivitySquare } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -14,7 +14,6 @@ const navItems = [
   { name: 'HFTrading Bot', path: '/hf-trading', icon: TrendingUp },
   { name: 'Backtest Engine', path: '/backtest', icon: ActivitySquare },
   { name: 'ML Studio', path: '/ml-studio', icon: Network },
-  { name: 'Trade History', path: '/history', icon: History },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 

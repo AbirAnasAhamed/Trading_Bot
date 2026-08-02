@@ -3,6 +3,7 @@ import { Wallet, TrendingUp, Activity } from 'lucide-react';
 import { portfolioService, type PortfolioOverview } from '../../services/api/portfolio';
 import { StatCard } from './components/StatCard';
 import { PortfolioChart } from './components/PortfolioChart';
+import { RecentTrades } from './components/RecentTrades';
 
 export const Dashboard: React.FC = () => {
   const [overview, setOverview] = useState<PortfolioOverview | null>(null);
@@ -88,6 +89,9 @@ export const Dashboard: React.FC = () => {
 
       {/* Chart Section */}
       <PortfolioChart data={overview.portfolio_growth} />
+
+      {/* Recent Trades Section */}
+      <RecentTrades />
     </div>
   );
 };

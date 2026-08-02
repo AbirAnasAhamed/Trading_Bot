@@ -100,7 +100,7 @@ export const Topbar: React.FC = () => {
       case '/hf-trading': return 'Order Flow Chart';
       case '/backtest': return 'Backtest Engine';
       case '/ml-studio': return 'ML Training Studio';
-      case '/history': return 'Trade History';
+      case '/dashboard/history': return 'Trade History';
       case '/settings': return 'Settings';
       default: return '';
     }
