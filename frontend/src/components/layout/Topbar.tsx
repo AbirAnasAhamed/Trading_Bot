@@ -126,8 +126,8 @@ export const Topbar: React.FC = () => {
             }`}
           >
             <Activity className="w-4 h-4 mr-2" />
-            <span className="text-xs font-bold uppercase hidden md:inline-block">
-              {!health ? 'Checking...' : health.status}
+            <span className="text-xs font-bold hidden md:inline-block">
+              {!health ? 'Checking...' : 'System Health'}
             </span>
           </button>
           
