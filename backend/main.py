@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import status, bot_control, system, auth, exchange_keys, trades, notifications, bot_details
+from app.api.routes import status, bot_control, system, auth, exchange_keys, trades, notifications, bot_details, portfolio
 from app.api.ws import ccxt_stream, notifications as notifications_ws
 from app.db.database import create_tables
 from app.db.timescale import setup_hyper_tables
@@ -35,6 +35,7 @@ app.include_router(system.router, prefix="/api/system", tags=["System & Backgrou
 app.include_router(exchange_keys.router, prefix="/api/exchange-keys", tags=["Exchange API Keys"])
 app.include_router(trades.router, prefix="/api/trades", tags=["Trade History"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(portfolio.router, prefix="/api/portfolio", tags=["Portfolio"])
 
 @app.on_event("startup")
 async def startup_event():

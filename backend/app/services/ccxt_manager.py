@@ -31,6 +31,26 @@ class CCXTManager:
         return cls._instances[exchange_id]
 
     @classmethod
+    async def create_authenticated_instance(cls, exchange_id: str, api_key: str, api_secret: str, passphrase: str = None) -> Any:
+        """
+        Creates a temporary authenticated exchange instance for REST calls (e.g. balance check).
+        MUST be closed after use (await instance.close()) to prevent RAM leaks.
+        """
+        exchange_class = getattr(ccxtpro, exchange_id, None)
+        if not exchange_class:
+            raise ValueError(f"Exchange {exchange_id} is not supported.")
+            
+        config = {
+            'apiKey': api_key,
+            'secret': api_secret,
+            'enableRateLimit': True,
+        }
+        if passphrase:
+            config['password'] = passphrase
+            
+        return exchange_class(config)
+
+    @classmethod
     async def close_all(cls):
         """Close all exchange connections gracefully."""
         async with cls._lock:
