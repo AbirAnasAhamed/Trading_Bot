@@ -1,11 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
 import json
-import logging
 from app.services.ccxt_manager import CCXTManager
+from app.core.logger import get_logger
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -35,7 +34,7 @@ async def chart_stream(websocket: WebSocket):
                 exchange_id = message.get("exchange")
                 if exchange_id:
                     try:
-                        logger.info(f"[WebSocket] Fetching markets for exchange: {exchange_id}")
+                        logger.debug(f"[WebSocket] Fetching markets for exchange: {exchange_id}")
                         ex = await CCXTManager.get_exchange(exchange_id)
                         await ex.load_markets()
                         symbols = list(ex.symbols)
@@ -61,7 +60,7 @@ async def chart_stream(websocket: WebSocket):
                 symbol = message.get("symbol")
                 timeframe = message.get("timeframe")
 
-                logger.info(f"[WebSocket] Asset Pair Changed (OHLCV) -> Exchange: {exchange_id}, Symbol: {symbol}, Timeframe: {timeframe}")
+                logger.debug(f"[WebSocket] Asset Pair Changed (OHLCV) -> Exchange: {exchange_id}, Symbol: {symbol}, Timeframe: {timeframe}")
 
                 if "ohlcv" in tasks and tasks["ohlcv"]:
                     tasks["ohlcv"].cancel()
@@ -78,7 +77,7 @@ async def chart_stream(websocket: WebSocket):
                             "timeframe": timeframe,
                             "data": historical
                         })
-                        logger.info(f"[WebSocket] Sent {len(historical)} historical candles for {symbol}")
+                        logger.debug(f"[WebSocket] Sent {len(historical)} historical candles for {symbol}")
 
                         while True:
                             live_candle = await ex.watch_ohlcv(symbol, timeframe)
@@ -90,7 +89,7 @@ async def chart_stream(websocket: WebSocket):
                                 "data": live_candle
                             })
                     except asyncio.CancelledError:
-                        logger.info(f"[WebSocket] Stopped watching OHLCV for {symbol}")
+                        logger.debug(f"[WebSocket] Stopped watching OHLCV for {symbol}")
                     except (WebSocketDisconnect, RuntimeError):
                         pass
                     except Exception as e:
@@ -109,7 +108,7 @@ async def chart_stream(websocket: WebSocket):
                 exchange_id = message.get("exchange")
                 symbol = message.get("symbol")
                 
-                logger.info(f"[WebSocket] Asset Pair Changed (Orderbook) -> Exchange: {exchange_id}, Symbol: {symbol}")
+                logger.debug(f"[WebSocket] Asset Pair Changed (Orderbook) -> Exchange: {exchange_id}, Symbol: {symbol}")
 
                 if "orderbook" in tasks and tasks["orderbook"]:
                     tasks["orderbook"].cancel()
@@ -117,10 +116,15 @@ async def chart_stream(websocket: WebSocket):
                 async def stream_orderbook():
                     try:
                         ex = await CCXTManager.get_exchange(exchange_id)
+                        connected = False
                         while True:
                             # Use watch_order_book for real-time L2 stream. Limit to 50 for RAM optimization
                             orderbook = await ex.watch_order_book(symbol, limit=50)
                             
+                            if not connected:
+                                logger.info(f"✅ Successfully connected to {exchange_id.upper()} WebSocket for {symbol} orderbook data! (UI Stream)")
+                                connected = True
+                                
                             # Trim data to strictly top 50 to ensure low memory footprint on client
                             trimmed_ob = {
                                 "bids": orderbook.get("bids", [])[:50],
@@ -134,7 +138,7 @@ async def chart_stream(websocket: WebSocket):
                                 "data": trimmed_ob
                             })
                     except asyncio.CancelledError:
-                        logger.info(f"[WebSocket] Stopped watching Orderbook for {symbol}")
+                        logger.debug(f"[WebSocket] Stopped watching Orderbook for {symbol}")
                     except (WebSocketDisconnect, RuntimeError):
                         pass
                     except Exception as e:

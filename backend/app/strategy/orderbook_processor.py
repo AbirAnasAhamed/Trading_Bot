@@ -1,4 +1,4 @@
-from app.exchange.binance_ws import BinanceWebSocketClient
+from app.exchange.ccxt_ws import CCXTWebSocketClient
 from app.db.database import AsyncSessionLocal
 from app.models.schema import L2Snapshot
 from app.core.logger import get_logger
@@ -6,10 +6,11 @@ from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 class OrderbookProcessor:
-    def __init__(self, symbol: str, depth_limit: int = 10, strategy_callback = None):
+    def __init__(self, symbol: str, exchange_id: str = 'binance', depth_limit: int = 10, strategy_callback = None):
         self.symbol = symbol.upper()
+        self.exchange_id = exchange_id
         self.depth_limit = depth_limit 
-        self.ws_client = BinanceWebSocketClient(symbol, self.process_snapshot)
+        self.ws_client = CCXTWebSocketClient(self.exchange_id, self.symbol, self.process_snapshot)
         self.strategy_callback = strategy_callback
         
     async def start(self):

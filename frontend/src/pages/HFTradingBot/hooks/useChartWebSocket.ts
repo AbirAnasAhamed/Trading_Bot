@@ -104,16 +104,17 @@ export const useChartWebSocket = () => {
   }, []);
 
   const sendMessage = useCallback((msg: WebSocketMessage) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(msg));
-    } else {
-        // If not connected, retry after a short delay
-        setTimeout(() => {
-           if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-             ws.current.send(JSON.stringify(msg));
-           }
-        }, 1000);
-    }
+    const trySend = (retries = 0) => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify(msg));
+      } else if (retries < 10) {
+        // If not connected, retry every 500ms up to 10 times (5 seconds)
+        setTimeout(() => trySend(retries + 1), 500);
+      } else {
+        console.error("WS message dropped, connection timeout", msg);
+      }
+    };
+    trySend();
   }, []);
 
   const fetchMarkets = useCallback((exchange: string) => {

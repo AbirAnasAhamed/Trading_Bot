@@ -89,7 +89,8 @@ class BotEngine:
         )
         
         # 3. Initialize Processor with engine callback
-        self.processor = OrderbookProcessor(symbol=symbol, strategy_callback=self._handle_data)
+        active_exchange = exchange_id if exchange_id else 'binance'
+        self.processor = OrderbookProcessor(symbol=symbol, exchange_id=active_exchange, strategy_callback=self._handle_data)
         
         self.is_running = True
         
