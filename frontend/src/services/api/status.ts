@@ -12,10 +12,13 @@ export interface SystemHealthResponse {
   uptime_seconds: number;
   cpu_usage: number;
   ram_usage: number;
-  components: SystemHealthComponents;
+  components?: SystemHealthComponents;
 }
 
 export const statusService = {
+  getStatus: (): Promise<SystemHealthResponse> => {
+    return apiClient<SystemHealthResponse>('/status/', { method: 'GET' });
+  },
   getHealth: (): Promise<SystemHealthResponse> => {
     return apiClient<SystemHealthResponse>('/status/health', { method: 'GET' });
   }

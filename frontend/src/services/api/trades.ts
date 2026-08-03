@@ -14,9 +14,5 @@ export interface Trade {
 export const tradeService = {
   getTrades: (skip: number = 0, limit: number = 50): Promise<Trade[]> => {
     return apiClient<Trade[]>(`/trades/?skip=${skip}&limit=${limit}`, { method: 'GET' });
-  },
-  
-  createDummyTrades: (count: number = 5): Promise<Trade[]> => {
-    return apiClient<Trade[]>(`/trades/dummy?count=${count}`, { method: 'POST' });
   }
 };

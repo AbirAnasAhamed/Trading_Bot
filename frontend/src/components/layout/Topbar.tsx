@@ -23,7 +23,25 @@ export const Topbar: React.FC = () => {
   const [health, setHealth] = useState<SystemHealthResponse | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const fetchHealth = async () => {
+  const fetchBasicStatus = async () => {
+    try {
+      const data = await statusService.getStatus();
+      setHealth(prev => ({
+        ...data,
+        components: prev?.components || { api: 'offline', database: 'offline', redis: 'offline', celery: 'offline' }
+      }));
+    } catch (e) {
+      setHealth(prev => ({
+        status: 'offline',
+        uptime_seconds: 0,
+        cpu_usage: 0,
+        ram_usage: 0,
+        components: prev?.components || { api: 'offline', database: 'offline', redis: 'offline', celery: 'offline' }
+      }));
+    }
+  };
+
+  const fetchDetailedHealth = async () => {
     try {
       const data = await statusService.getHealth();
       setHealth(data);
@@ -39,10 +57,16 @@ export const Topbar: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchHealth();
-    const interval = setInterval(fetchHealth, 15000);
+    fetchDetailedHealth();
+    const interval = setInterval(fetchBasicStatus, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (isHealthOpen) {
+      fetchDetailedHealth();
+    }
+  }, [isHealthOpen]);
 
   const loadNotifications = async () => {
     try {
