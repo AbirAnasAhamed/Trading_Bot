@@ -12,6 +12,11 @@ services:
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trader -d cryptobot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -30,7 +35,8 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -71,8 +77,10 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
     env_file:
       - ./backend/.env
