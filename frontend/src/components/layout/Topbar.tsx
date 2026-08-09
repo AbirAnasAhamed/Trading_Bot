@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Bell, User, Activity } from 'lucide-react';
+import { Moon, Sun, Bell, Activity } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { ProfileDrawer } from './ProfileDrawer';
 import { SystemHealthDropdown } from './SystemHealthDropdown';
 import { NotificationDropdown } from './NotificationDropdown';
 import { statusService } from '../../services/api/status';
@@ -17,7 +16,6 @@ export const Topbar: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [health, setHealth] = useState<SystemHealthResponse | null>(null);
@@ -174,17 +172,6 @@ export const Topbar: React.FC = () => {
             )}
           </button>
           
-          <button 
-            onClick={() => setIsProfileOpen(true)}
-            className="flex items-center space-x-2 pl-2 border-l border-panel ml-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary">
-              <User className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium text-primary hidden md:block">
-              {user?.email ? user?.email.split('@')[0] : 'Trader'}
-            </span>
-          </button>
         </div>
       </header>
       
@@ -192,11 +179,6 @@ export const Topbar: React.FC = () => {
         isOpen={isHealthOpen} 
         onClose={() => setIsHealthOpen(false)} 
         health={health} 
-      />
-      
-      <ProfileDrawer 
-        isOpen={isProfileOpen} 
-        onClose={() => setIsProfileOpen(false)} 
       />
 
       <NotificationDropdown
