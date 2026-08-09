@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import { MarketSelectorModal } from './MarketSelectorModal';
 
 interface SelectorsProps {
@@ -19,11 +19,7 @@ interface SelectorsProps {
 
 const timeframes = ['1s', '1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
 
-const formatVolume = (vol: number) => {
-  if (vol >= 1000000) return (vol / 1000000).toFixed(0) + 'M';
-  if (vol >= 1000) return (vol / 1000).toFixed(0) + 'k';
-  return vol.toFixed(0);
-};
+
 
 export const Selectors: React.FC<SelectorsProps> = ({
   exchanges,
@@ -40,6 +36,7 @@ export const Selectors: React.FC<SelectorsProps> = ({
   setVolumeType
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSliderExpanded, setIsSliderExpanded] = useState(false);
 
   return (
     <>
@@ -85,7 +82,7 @@ export const Selectors: React.FC<SelectorsProps> = ({
 
         {/* Wall Threshold Pill */}
         {setWallThreshold && setVolumeType && (
-          <div className="flex-1 flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4">
+          <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 ${isSliderExpanded ? 'flex-1' : 'w-auto'}`}>
             <span className="text-secondary font-bold text-sm whitespace-nowrap">Min Vol:</span>
             
             {/* Toggle Switch */}
@@ -108,21 +105,37 @@ export const Selectors: React.FC<SelectorsProps> = ({
               </button>
             </div>
 
-            {/* Slider */}
-            <input 
-              type="range" 
-              min="0" 
-              max="10000000" 
-              step="1000" 
-              value={wallThreshold} 
-              onChange={(e) => setWallThreshold(Number(e.target.value))}
-              className="flex-1 accent-blue-500 h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer"
-            />
-            
-            {/* Value Display */}
-            <span className="text-blue-500 font-bold w-12 text-right">
-              {formatVolume(wallThreshold)}
-            </span>
+            <button
+              onClick={() => setIsSliderExpanded(!isSliderExpanded)}
+              className="p-1 rounded-full hover:bg-primary text-secondary hover:text-blue-500 transition-colors flex items-center justify-center"
+              title={isSliderExpanded ? "Collapse Slider" : "Expand Slider"}
+            >
+              {isSliderExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </button>
+
+            {isSliderExpanded && (
+              <div className="flex-1 flex items-center gap-4 animate-in fade-in duration-300 min-w-[200px] md:min-w-[600px]">
+                {/* Slider */}
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="10000000" 
+                  step="1000" 
+                  value={wallThreshold} 
+                  onChange={(e) => setWallThreshold(Number(e.target.value))}
+                  className="flex-1 accent-blue-500 h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer"
+                />
+                
+                {/* Manual Input */}
+                <input
+                  type="number"
+                  min="0"
+                  value={wallThreshold}
+                  onChange={(e) => setWallThreshold(Number(e.target.value))}
+                  className="w-24 bg-primary border border-panel rounded px-2 py-1 text-blue-500 text-right focus:outline-none focus:border-blue-500 font-bold"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
