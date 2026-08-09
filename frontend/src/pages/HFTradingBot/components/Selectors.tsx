@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, ChevronRight, ChevronLeft, ChevronDown } from 'lucide-react';
 import { MarketSelectorModal } from './MarketSelectorModal';
 
 interface SelectorsProps {
@@ -37,47 +37,116 @@ export const Selectors: React.FC<SelectorsProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSliderExpanded, setIsSliderExpanded] = useState(false);
+  const [isMarketExpanded, setIsMarketExpanded] = useState(false);
+  const [isTimeframeExpanded, setIsTimeframeExpanded] = useState(false);
+  const [isTimeframeDropdownOpen, setIsTimeframeDropdownOpen] = useState(false);
+  const timeframeDropdownRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (timeframeDropdownRef.current && !timeframeDropdownRef.current.contains(event.target as Node)) {
+        setIsTimeframeDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 mb-4">
-        {/* Market Selector Trigger */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex flex-col justify-center bg-panel border border-panel rounded-lg px-4 py-2 hover:border-blue-500 transition-colors group min-w-[200px]"
-        >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
-              <Search className="w-4 h-4 text-secondary group-hover:text-blue-500 transition-colors" />
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] text-secondary font-bold uppercase tracking-wider leading-none mb-1">{selectedExchange || 'Exchange'}</span>
-                <span className="text-base font-bold text-primary leading-none">{selectedSymbol || 'Select Pair'}</span>
+        {/* Market Selector Pill */}
+        <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 w-auto`}>
+          <span className="text-secondary font-bold text-sm whitespace-nowrap">
+            Market: <span className="text-primary">{selectedSymbol || 'Select'}</span>
+          </span>
+          <button
+            onClick={() => setIsMarketExpanded(!isMarketExpanded)}
+            className="p-1 rounded-full hover:bg-primary text-secondary hover:text-blue-500 transition-colors flex items-center justify-center"
+            title={isMarketExpanded ? "Collapse Market Selector" : "Expand Market Selector"}
+          >
+            {isMarketExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </button>
+          
+          <div className={`flex items-center transition-all duration-500 ease-in-out overflow-hidden ${
+            isMarketExpanded ? 'max-w-[400px] opacity-100 ml-2 flex-1' : 'max-w-0 opacity-0 ml-0 flex-none'
+          }`}>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex flex-col justify-center bg-primary border border-panel rounded-lg px-4 py-1 hover:border-blue-500 transition-colors group shrink-0 min-w-[150px]"
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <Search className="w-4 h-4 text-secondary group-hover:text-blue-500 transition-colors" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] text-secondary font-bold uppercase tracking-wider leading-none mb-1">{selectedExchange || 'Exchange'}</span>
+                    <span className="text-sm font-bold text-primary leading-none">{selectedSymbol || 'Select Pair'}</span>
+                  </div>
+                </div>
               </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Timeframe Selector Pill */}
+        <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 w-auto`}>
+          <span className="text-secondary font-bold text-sm whitespace-nowrap">
+            TF: <span className="text-primary">{selectedTimeframe}</span>
+          </span>
+          <button
+            onClick={() => setIsTimeframeExpanded(!isTimeframeExpanded)}
+            className="p-1 rounded-full hover:bg-primary text-secondary hover:text-blue-500 transition-colors flex items-center justify-center"
+            title={isTimeframeExpanded ? "Collapse Timeframe Selector" : "Expand Timeframe Selector"}
+          >
+            {isTimeframeExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </button>
+          
+          <div className={`flex items-center transition-all duration-500 ease-in-out ${
+            isTimeframeExpanded ? 'max-w-[400px] opacity-100 ml-2 flex-1' : 'max-w-0 opacity-0 ml-0 flex-none pointer-events-none'
+          }`}>
+            <div className="flex bg-primary border border-panel rounded-lg focus-within:border-blue-500 transition-colors shrink-0">
+              <div className="relative" ref={timeframeDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsTimeframeDropdownOpen(!isTimeframeDropdownOpen)}
+                  className="flex items-center justify-between gap-2 bg-transparent text-primary font-bold pl-3 pr-2 py-1 focus:outline-none cursor-pointer border-r border-panel w-20"
+                >
+                  <span>{timeframes.includes(selectedTimeframe) ? selectedTimeframe : 'Sel'}</span>
+                  <ChevronDown className="w-3 h-3 text-secondary" />
+                </button>
+                
+                {/* Dropdown Menu */}
+                {isTimeframeDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 bg-panel border border-panel rounded-xl p-2 shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-200">
+                    <div className="grid grid-cols-4 gap-1 w-48">
+                      {timeframes.map((tf) => (
+                        <button
+                          key={tf}
+                          onClick={() => {
+                            onTimeframeChange(tf);
+                            setIsTimeframeDropdownOpen(false);
+                          }}
+                          className={`aspect-square flex items-center justify-center rounded-lg text-sm font-bold transition-colors ${
+                            selectedTimeframe === tf 
+                              ? 'bg-blue-500 text-white' 
+                              : 'bg-primary text-secondary hover:bg-blue-500/20 hover:text-blue-500'
+                          }`}
+                        >
+                          {tf}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input 
+                type="text"
+                className="w-16 bg-transparent px-2 py-1 text-primary font-bold focus:outline-none text-center"
+                value={selectedTimeframe}
+                onChange={(e) => onTimeframeChange(e.target.value)}
+                placeholder="Custom"
+              />
             </div>
           </div>
-        </button>
-
-        {/* Timeframe Selector (Dropdown + Manual Input) */}
-        <div className="flex bg-panel border border-panel rounded-lg focus-within:border-blue-500 transition-colors">
-          <select 
-            className="bg-transparent text-primary font-bold pl-3 pr-1 py-2 focus:outline-none cursor-pointer border-r border-panel"
-            value={timeframes.includes(selectedTimeframe) ? selectedTimeframe : ''}
-            onChange={(e) => {
-              if (e.target.value) onTimeframeChange(e.target.value);
-            }}
-          >
-            <option value="" disabled className="bg-panel text-primary">Presets</option>
-            {timeframes.map((tf) => (
-              <option key={tf} value={tf} className="bg-panel text-primary">{tf}</option>
-            ))}
-          </select>
-          <input 
-            type="text"
-            className="w-16 bg-transparent px-2 py-2 text-primary font-bold focus:outline-none text-center"
-            value={selectedTimeframe}
-            onChange={(e) => onTimeframeChange(e.target.value)}
-            placeholder="Custom"
-          />
         </div>
 
         {/* Wall Threshold Pill */}
@@ -113,29 +182,31 @@ export const Selectors: React.FC<SelectorsProps> = ({
               {isSliderExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
 
-            {isSliderExpanded && (
-              <div className="flex-1 flex items-center gap-4 animate-in fade-in duration-300 min-w-[200px] md:min-w-[600px]">
-                {/* Slider */}
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="10000000" 
-                  step="1000" 
-                  value={wallThreshold} 
-                  onChange={(e) => setWallThreshold(Number(e.target.value))}
-                  className="flex-1 accent-blue-500 h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer"
-                />
-                
-                {/* Manual Input */}
-                <input
-                  type="number"
-                  min="0"
-                  value={wallThreshold}
-                  onChange={(e) => setWallThreshold(Number(e.target.value))}
-                  className="w-24 bg-primary border border-panel rounded px-2 py-1 text-blue-500 text-right focus:outline-none focus:border-blue-500 font-bold"
-                />
-              </div>
-            )}
+            <div 
+              className={`flex items-center gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
+                isSliderExpanded ? 'max-w-[800px] opacity-100 ml-2 flex-1' : 'max-w-0 opacity-0 ml-0 flex-none'
+              }`}
+            >
+              {/* Slider */}
+              <input 
+                type="range" 
+                min="0" 
+                max="10000000" 
+                step="1000" 
+                value={wallThreshold} 
+                onChange={(e) => setWallThreshold(Number(e.target.value))}
+                className="w-[150px] md:w-[400px] flex-1 accent-blue-500 h-2 bg-[var(--border-color)] rounded-lg appearance-none cursor-pointer"
+              />
+              
+              {/* Manual Input */}
+              <input
+                type="number"
+                min="0"
+                value={wallThreshold}
+                onChange={(e) => setWallThreshold(Number(e.target.value))}
+                className="w-24 bg-primary border border-panel rounded px-2 py-1 text-blue-500 text-right focus:outline-none focus:border-blue-500 font-bold shrink-0"
+              />
+            </div>
           </div>
         )}
       </div>
