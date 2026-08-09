@@ -109,10 +109,15 @@ async def poll_telegram_updates():
                                     text="✅ <b>Account Connected!</b>\n\nYou will now receive trading notifications here."
                                 )
                             else:
-                                await TelegramClient.send_message(
-                                    chat_id=chat_id,
-                                    text="❌ <b>Invalid or expired connection token.</b>\n\nPlease generate a new link from the dashboard."
-                                )
+                                # Check if this chat_id is already connected to avoid sending error messages on double clicks
+                                check_existing = await session.execute(select(User).where(User.telegram_chat_id == chat_id))
+                                existing_user = check_existing.scalars().first()
+                                if existing_user:
+                                    # Silently ignore or send a friendly reminder if they click start again
+                                    pass
+                                else:
+                                    # We just ignore invalid tokens entirely to prevent spamming errors on multiple clicks
+                                    pass
         except Exception as e:
             logger.error(f"Telegram Polling Error: {e}")
             
