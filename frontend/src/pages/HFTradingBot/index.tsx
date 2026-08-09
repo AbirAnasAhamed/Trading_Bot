@@ -61,7 +61,7 @@ export const HFTradingBot: React.FC = () => {
     <div className="flex flex-col h-full relative">
       {topbarElement && createPortal(wsIndicator, topbarElement)}
 
-      <div className="bg-panel border border-panel rounded-xl p-6 pt-8 shadow-sm flex flex-col flex-1 relative">
+      <div className="bg-panel border border-panel rounded-xl p-6 pt-3 shadow-sm flex flex-col flex-1 relative">
         <button 
           onClick={() => setIsSelectorsVisible(!isSelectorsVisible)}
           className="absolute top-2 right-2 p-1.5 bg-background border border-panel rounded-lg text-gray-500 hover:text-white transition-colors z-20 hover:border-blue-500"
@@ -71,7 +71,7 @@ export const HFTradingBot: React.FC = () => {
         </button>
 
         {isSelectorsVisible && (
-          <div className="flex justify-start items-end mb-4 pr-10">
+          <div className="flex justify-start items-end mb-1 pr-10">
             <Selectors 
               exchanges={exchanges}
               markets={markets}

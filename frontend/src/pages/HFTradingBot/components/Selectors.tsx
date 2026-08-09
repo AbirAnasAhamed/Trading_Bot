@@ -53,9 +53,11 @@ export const Selectors: React.FC<SelectorsProps> = ({
   }, []);
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        {/* Market Selector Pill */}
-        <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 w-auto`}>
+      <div className="flex flex-col gap-1 mb-1">
+        {/* Top Part: Current Selectors */}
+        <div className="flex flex-col md:flex-row gap-2">
+          {/* Market Selector Pill */}
+        <div className={`flex items-center bg-panel border border-panel rounded-xl px-3 py-1 gap-3 transition-all duration-300 w-auto`}>
           <span className="text-secondary font-bold text-sm whitespace-nowrap">
             Market: <span className="text-primary">{selectedSymbol || 'Select'}</span>
           </span>
@@ -88,7 +90,7 @@ export const Selectors: React.FC<SelectorsProps> = ({
         </div>
 
         {/* Timeframe Selector Pill */}
-        <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 w-auto`}>
+        <div className={`flex items-center bg-panel border border-panel rounded-xl px-3 py-1 gap-3 transition-all duration-300 w-auto`}>
           <span className="text-secondary font-bold text-sm whitespace-nowrap">
             TF: <span className="text-primary">{selectedTimeframe}</span>
           </span>
@@ -151,7 +153,7 @@ export const Selectors: React.FC<SelectorsProps> = ({
 
         {/* Wall Threshold Pill */}
         {setWallThreshold && setVolumeType && (
-          <div className={`flex items-center bg-panel border border-panel rounded-xl px-4 py-2 gap-4 transition-all duration-300 ${isSliderExpanded ? 'flex-1' : 'w-auto'}`}>
+          <div className={`flex items-center bg-panel border border-panel rounded-xl px-3 py-1 gap-3 transition-all duration-300 ${isSliderExpanded ? 'flex-1' : 'w-auto'}`}>
             <span className="text-secondary font-bold text-sm whitespace-nowrap">Min Vol:</span>
             
             {/* Toggle Switch */}
@@ -209,6 +211,15 @@ export const Selectors: React.FC<SelectorsProps> = ({
             </div>
           </div>
         )}
+        </div>
+
+        {/* Divider */}
+        <div className="w-full border-t border-panel my-0.5 opacity-50"></div>
+
+        {/* Bottom Part: Empty for future options */}
+        <div className="flex flex-col md:flex-row gap-2 empty-future-options">
+          {/* Add future options and buttons here */}
+        </div>
       </div>
 
       <MarketSelectorModal
