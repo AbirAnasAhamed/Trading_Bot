@@ -48,7 +48,7 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
       
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
         {navItems.map((item) => (
           <NavLink
             key={item.name}
