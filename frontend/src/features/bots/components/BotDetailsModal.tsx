@@ -36,7 +36,7 @@ export const BotDetailsModal: React.FC<BotDetailsModalProps> = ({ botId, token, 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/bot/${botId}`, {
+        const response = await fetch(`/api/bot/${botId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error("Failed to fetch bot details");

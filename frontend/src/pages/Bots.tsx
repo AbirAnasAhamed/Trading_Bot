@@ -23,7 +23,7 @@ export const Bots: React.FC = () => {
 
   const fetchBots = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/bot/state', {
+      const response = await fetch('/api/bot/state', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -55,7 +55,7 @@ export const Bots: React.FC = () => {
   const handleDelete = async (bot_name: string) => {
     setDeletingId(bot_name);
     try {
-      const response = await fetch('http://localhost:8000/api/bot/delete', {
+      const response = await fetch('/api/bot/delete', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export const Bots: React.FC = () => {
     setStartStopId(bot.bot_id);
     const endpoint = bot.is_running ? '/api/bot/stop' : '/api/bot/start';
     try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export const Bots: React.FC = () => {
     setTogglingId(bot.bot_id);
     const endpoint = bot.is_paused ? '/api/bot/resume' : '/api/bot/pause';
     try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

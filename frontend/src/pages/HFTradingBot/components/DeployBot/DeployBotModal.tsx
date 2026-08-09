@@ -39,7 +39,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
   React.useEffect(() => {
     if (isOpen && token) {
       setLoadingExchanges(true);
-      fetch('http://localhost:8000/api/exchange-keys', {
+      fetch('/api/exchange-keys', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(async res => {
@@ -66,7 +66,7 @@ export const DeployBotModal: React.FC<DeployBotModalProps> = ({ isOpen, onClose,
     
     // Call the actual backend API using fetch
     try {
-      const response = await fetch('http://localhost:8000/api/bot/start', {
+      const response = await fetch('/api/bot/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
