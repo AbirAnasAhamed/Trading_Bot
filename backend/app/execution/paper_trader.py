@@ -6,8 +6,9 @@ from app.models.schema import TradeHistory
 logger = get_logger(__name__)
 
 class PaperTrader(BaseTrader):
-    def __init__(self, bot_id: str, initial_balance: float = 10000.0):
+    def __init__(self, bot_id: str, user_id: int, initial_balance: float = 10000.0):
         self.bot_id = bot_id
+        self.user_id = user_id
         self.initial_balance = initial_balance
         self.usdt_balance = initial_balance
         self.crypto_balance = 0.0
@@ -19,6 +20,8 @@ class PaperTrader(BaseTrader):
             self.crypto_balance += amount
             logger.info(f"[PAPER] BUY {amount} {symbol} @ {price}. USDT Left: {self.usdt_balance}")
             await self._record_trade(symbol, 'buy', price, amount)
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"🟩 PAPER BUY: {amount} {symbol} @ ${price:.4f}", "info")
         else:
             logger.warning(f"[PAPER] Insufficient USDT for BUY. Need: {cost}, Have: {self.usdt_balance}")
             
@@ -29,6 +32,8 @@ class PaperTrader(BaseTrader):
             self.usdt_balance += revenue
             logger.info(f"[PAPER] SELL {amount} {symbol} @ {price}. USDT Total: {self.usdt_balance}")
             await self._record_trade(symbol, 'sell', price, amount)
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"🟥 PAPER SELL: {amount} {symbol} @ ${price:.4f}", "info")
         else:
             logger.warning(f"[PAPER] Insufficient crypto for SELL. Need: {amount}, Have: {self.crypto_balance}")
 

@@ -36,12 +36,20 @@ app.include_router(exchange_keys.router, prefix="/api/exchange-keys", tags=["Exc
 app.include_router(trades.router, prefix="/api/trades", tags=["Trade History"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(portfolio.router, prefix="/api/portfolio", tags=["Portfolio"])
+from app.api.routes import telegram
+app.include_router(telegram.router, prefix="/api/telegram", tags=["Telegram Integration"])
 
 @app.on_event("startup")
 async def startup_event():
     await create_tables()
     await setup_hyper_tables()
     await redis_client.connect()
+    
+    from app.core.config import settings
+    if settings.TELEGRAM_BOT_TOKEN:
+        from app.services.telegram.client import poll_telegram_updates
+        import asyncio
+        asyncio.create_task(poll_telegram_updates())
 
 @app.on_event("shutdown")
 async def shutdown_event():

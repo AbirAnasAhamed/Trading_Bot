@@ -37,6 +37,26 @@ class NotificationService:
             }
             await ws_manager.send_personal_message(notification_data, user_id)
             
+            # Send Telegram Notification asynchronously if enabled
+            if getattr(user, 'telegram_chat_id', None) and getattr(user, 'telegram_notifications_enabled', False):
+                import asyncio
+                from app.services.telegram import telegram_client
+                
+                # Format message with some basic Markdown/HTML for Telegram
+                emoji_map = {
+                    "info": "ℹ️",
+                    "success": "✅",
+                    "warning": "⚠️",
+                    "error": "❌"
+                }
+                icon = emoji_map.get(type, "🔔")
+                tg_message = f"{icon} <b>Notification</b>\n\n{message}"
+                
+                asyncio.create_task(telegram_client.send_message(
+                    chat_id=user.telegram_chat_id,
+                    text=tg_message
+                ))
+            
             return notification
 
     @staticmethod

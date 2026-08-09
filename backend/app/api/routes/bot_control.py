@@ -68,6 +68,7 @@ async def start_bot(
 
     success = await bot_manager.start_bot(
         bot_id=req.bot_name,
+        user_id=current_user.id,
         symbol=req.symbol,
         mode=req.mode,
         exchange_id=req.exchange_id,

@@ -8,8 +8,9 @@ from app.execution.real_trader import RealTrader
 logger = get_logger(__name__)
 
 class BotEngine:
-    def __init__(self, bot_id: str = "default_bot"):
+    def __init__(self, bot_id: str, user_id: int):
         self.bot_id = bot_id
+        self.user_id = user_id
         self.processor = None
         self.strategy = None
         self.trader = None
@@ -74,9 +75,9 @@ class BotEngine:
         
         # 1. Initialize Trader
         if mode == 'real':
-            self.trader = RealTrader(bot_id=self.bot_id, exchange_id=exchange_id, api_key=api_key, api_secret=api_secret)
+            self.trader = RealTrader(bot_id=self.bot_id, user_id=self.user_id, exchange_id=exchange_id, api_key=api_key, api_secret=api_secret)
         else:
-            self.trader = PaperTrader(bot_id=self.bot_id)
+            self.trader = PaperTrader(bot_id=self.bot_id, user_id=self.user_id)
             
         # 2. Initialize Strategy with Trader
         self.strategy = L2WallDetector(

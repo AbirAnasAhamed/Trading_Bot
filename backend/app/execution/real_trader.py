@@ -8,8 +8,9 @@ from app.models.schema import TradeHistory
 logger = get_logger(__name__)
 
 class RealTrader(BaseTrader):
-    def __init__(self, bot_id: str, exchange_id: str, api_key: str, api_secret: str):
+    def __init__(self, bot_id: str, user_id: int, exchange_id: str, api_key: str, api_secret: str):
         self.bot_id = bot_id
+        self.user_id = user_id
         try:
             exchange_class = getattr(ccxt, exchange_id)
         except AttributeError:
@@ -36,8 +37,12 @@ class RealTrader(BaseTrader):
             executed_price = order['average'] if order.get('average') else price
             logger.info(f"[REAL] BUY Executed: {amount} {symbol} @ {executed_price}")
             await self._record_trade(symbol, 'buy', executed_price, amount)
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"🟢 REAL BUY: {amount} {symbol} @ ${executed_price:.4f}", "info")
         except Exception as e:
             logger.error(f"[REAL] BUY failed: {e}")
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"❌ REAL BUY FAILED: {symbol} - {e}", "error")
             
     async def execute_sell(self, symbol: str, price: float, amount: float):
         try:
@@ -45,8 +50,12 @@ class RealTrader(BaseTrader):
             executed_price = order['average'] if order.get('average') else price
             logger.info(f"[REAL] SELL Executed: {amount} {symbol} @ {executed_price}")
             await self._record_trade(symbol, 'sell', executed_price, amount)
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"🔴 REAL SELL: {amount} {symbol} @ ${executed_price:.4f}", "info")
         except Exception as e:
             logger.error(f"[REAL] SELL failed: {e}")
+            from app.services.notification_manager import NotificationService
+            await NotificationService.create_notification(self.user_id, f"❌ REAL SELL FAILED: {symbol} - {e}", "error")
 
     async def _record_trade(self, symbol: str, trade_type: str, price: float, amount: float):
         async with AsyncSessionLocal() as session:

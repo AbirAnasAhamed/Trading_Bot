@@ -48,6 +48,11 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     notifications_enabled = Column(Boolean, default=True, nullable=False)
     
+    # Telegram Integration
+    telegram_chat_id = Column(String, nullable=True, index=True)
+    telegram_notifications_enabled = Column(Boolean, default=True)
+    telegram_auth_token = Column(String, nullable=True, unique=True, index=True)
+    
     exchange_keys = relationship("ExchangeKey", back_populates="user", cascade="all, delete-orphan")
 
 class ExchangeKey(Base):
