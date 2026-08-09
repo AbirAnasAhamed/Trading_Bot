@@ -39,7 +39,7 @@ export const SystemHealthDropdown: React.FC<SystemHealthDropdownProps> = ({ isOp
         className="fixed inset-0 z-40" 
         onClick={onClose}
       />
-      <div className="absolute top-14 right-40 w-80 bg-panel border border-panel rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
+      <div className="absolute top-14 right-40 w-80 bg-panel border border-panel rounded-xl shadow-2xl z-50 overflow-hidden animate-dropdown-slide-down">
         <div className="p-4 border-b border-panel bg-primary/5">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-primary">System Health</h3>

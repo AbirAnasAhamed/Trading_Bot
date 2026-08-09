@@ -40,7 +40,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   return (
     <div 
       ref={dropdownRef}
-      className="absolute top-16 right-6 w-80 bg-background/80 backdrop-blur-xl border border-panel/50 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in slide-in-from-top-4 duration-200"
+      className="absolute top-16 right-6 w-80 bg-background/80 backdrop-blur-xl border border-panel/50 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[80vh] animate-dropdown-slide-down"
     >
       <div className="p-4 border-b border-panel/50 flex items-center justify-between bg-panel/30">
         <div className="flex items-center space-x-2">

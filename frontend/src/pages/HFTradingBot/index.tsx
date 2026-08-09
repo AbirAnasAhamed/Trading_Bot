@@ -70,24 +70,26 @@ export const HFTradingBot: React.FC = () => {
           {isSelectorsVisible ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
-        {isSelectorsVisible && (
-          <div className="flex justify-start items-end mb-1 pr-10">
-            <Selectors 
-              exchanges={exchanges}
-              markets={markets}
-              selectedExchange={selectedExchange}
-              selectedSymbol={selectedSymbol}
-              selectedTimeframe={selectedTimeframe}
-              onExchangeChange={setSelectedExchange}
-              onSymbolChange={setSelectedSymbol}
-              onTimeframeChange={setSelectedTimeframe}
-              wallThreshold={wallThreshold}
-              setWallThreshold={setWallThreshold}
-              volumeType={volumeType}
-              setVolumeType={setVolumeType}
-            />
-          </div>
-        )}
+        <div 
+          className={`relative z-50 flex justify-start items-end pr-10 transition-all duration-500 ease-in-out ${
+            isSelectorsVisible ? 'max-h-[500px] opacity-100 mb-1 overflow-visible' : 'max-h-0 opacity-0 mb-0 pointer-events-none overflow-hidden'
+          }`}
+        >
+          <Selectors 
+            exchanges={exchanges}
+            markets={markets}
+            selectedExchange={selectedExchange}
+            selectedSymbol={selectedSymbol}
+            selectedTimeframe={selectedTimeframe}
+            onExchangeChange={setSelectedExchange}
+            onSymbolChange={setSelectedSymbol}
+            onTimeframeChange={setSelectedTimeframe}
+            wallThreshold={wallThreshold}
+            setWallThreshold={setWallThreshold}
+            volumeType={volumeType}
+            setVolumeType={setVolumeType}
+          />
+        </div>
 
         <div className="flex-1 bg-background border border-panel rounded-lg overflow-hidden relative">
            {historicalData.length === 0 && selectedSymbol ? (

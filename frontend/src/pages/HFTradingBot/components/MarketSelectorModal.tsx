@@ -73,9 +73,9 @@ export const MarketSelectorModal: React.FC<MarketSelectorModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-backdrop-fade">
       <div 
-        className="bg-panel border border-panel rounded-xl w-full max-w-3xl h-[600px] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-panel border border-panel rounded-xl w-full max-w-3xl h-[600px] flex flex-col shadow-2xl overflow-hidden animate-modal-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Bar */}

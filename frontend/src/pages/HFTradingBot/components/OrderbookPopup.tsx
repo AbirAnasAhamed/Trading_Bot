@@ -15,8 +15,8 @@ export const OrderbookPopup: React.FC<OrderbookPopupProps> = ({ orderbookData, s
     <>
       {/* Orderbook Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-[350px] h-[550px] animate-in zoom-in-95 duration-200 shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-backdrop-fade">
+          <div className="relative w-[350px] h-[550px] animate-modal-slide-up shadow-2xl">
             <button 
               onClick={() => setIsOpen(false)}
               className="absolute -top-4 -right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 transition-colors"
