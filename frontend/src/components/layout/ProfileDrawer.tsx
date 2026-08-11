@@ -38,8 +38,8 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ isOpen, onClose })
       {/* Drawer */}
       <div 
         className={cn(
-          "fixed top-0 right-0 h-full w-full max-w-sm bg-panel border-l border-panel shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out flex flex-col",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          "fixed top-0 left-0 h-full w-full max-w-sm bg-panel border-r border-panel shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out flex flex-col",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex items-center justify-between p-6 border-b border-panel">
