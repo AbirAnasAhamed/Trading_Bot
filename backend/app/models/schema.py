@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, Text, Float, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 from datetime import datetime
@@ -8,8 +8,8 @@ class L2Snapshot(Base):
 
     # TimescaleDB hypertables often use the time column and an ID as primary keys or just index them heavily.
     id = Column(Integer, primary_key=True, autoincrement=True)
-    symbol = Column(String, index=True, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, primary_key=True)
+    symbol = Column(Text, index=True, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False, primary_key=True)
     
     # Wall detection metrics
     buy_wall_volume = Column(Float, nullable=False)
@@ -23,12 +23,12 @@ class TradeHistory(Base):
     __tablename__ = "trade_history"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    symbol = Column(String, index=True, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, primary_key=True)
+    symbol = Column(Text, index=True, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False, primary_key=True)
     
-    trade_type = Column(String, nullable=False) # 'buy' or 'sell'
-    execution_type = Column(String, nullable=False) # 'paper' or 'real'
-    bot_id = Column(String, index=True, nullable=True) # ID of the bot that executed this trade
+    trade_type = Column(Text, nullable=False) # 'buy' or 'sell'
+    execution_type = Column(Text, nullable=False) # 'paper' or 'real'
+    bot_id = Column(Text, index=True, nullable=True) # ID of the bot that executed this trade
     price = Column(Float, nullable=False)
     amount = Column(Float, nullable=False)
     pnl = Column(Float, default=0.0)
@@ -41,17 +41,17 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    email = Column(Text, unique=True, index=True, nullable=False)
+    hashed_password = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     notifications_enabled = Column(Boolean, default=True, nullable=False)
     
     # Telegram Integration
-    telegram_chat_id = Column(String, nullable=True, index=True)
+    telegram_chat_id = Column(Text, nullable=True, index=True)
     telegram_notifications_enabled = Column(Boolean, default=True)
-    telegram_auth_token = Column(String, nullable=True, unique=True, index=True)
+    telegram_auth_token = Column(Text, nullable=True, unique=True, index=True)
     
     exchange_keys = relationship("ExchangeKey", back_populates="user", cascade="all, delete-orphan")
 
@@ -60,12 +60,12 @@ class ExchangeKey(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    exchange_id = Column(String, index=True, nullable=False) # e.g. "binance", "bybit"
-    encrypted_api_key = Column(String, nullable=False)
-    encrypted_api_secret = Column(String, nullable=False)
-    encrypted_passphrase = Column(String, nullable=True)
+    exchange_id = Column(Text, index=True, nullable=False) # e.g. "binance", "bybit"
+    encrypted_api_key = Column(Text, nullable=False)
+    encrypted_api_secret = Column(Text, nullable=False)
+    encrypted_passphrase = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     
     user = relationship("User", back_populates="exchange_keys")
 
@@ -73,20 +73,20 @@ class MLModel(Base):
     __tablename__ = "ml_models"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    model_name = Column(String, index=True, nullable=False)
-    version = Column(String, nullable=False)
+    model_name = Column(Text, index=True, nullable=False)
+    version = Column(Text, nullable=False)
     accuracy = Column(Float, nullable=True)
-    status = Column(String, default="training") # training, active, archived
-    file_path = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(Text, default="training") # training, active, archived
+    file_path = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 class BacktestResult(Base):
     __tablename__ = "backtest_results"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    strategy_name = Column(String, index=True, nullable=False)
-    symbol = Column(String, nullable=False)
-    timeframe = Column(String, nullable=False)
+    strategy_name = Column(Text, index=True, nullable=False)
+    symbol = Column(Text, nullable=False)
+    timeframe = Column(Text, nullable=False)
     
     # Metrics
     total_trades = Column(Integer, default=0)
@@ -95,18 +95,17 @@ class BacktestResult(Base):
     max_drawdown = Column(Float, default=0.0)
     
     # Context
-    status = Column(String, default="running") # running, completed, failed
-    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(Text, default="running") # running, completed, failed
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 class Notification(Base):
     __tablename__ = "notifications"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
-    message = Column(String, nullable=False)
-    type = Column(String, default="info") # info, success, warning, error
+    message = Column(Text, nullable=False)
+    type = Column(Text, default="info") # info, success, warning, error
     is_read = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
     
     user = relationship("User")
-

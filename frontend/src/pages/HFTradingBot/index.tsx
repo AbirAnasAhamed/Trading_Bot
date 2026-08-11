@@ -10,9 +10,10 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 export const HFTradingBot: React.FC = () => {
   const [selectedExchange, setSelectedExchange] = useState<string>('binance');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC/USDT');
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('1m');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('3m');
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
   const [isSelectorsVisible, setIsSelectorsVisible] = useState<boolean>(true);
+  const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
   
   const { 
     isConnected, 
@@ -21,10 +22,11 @@ export const HFTradingBot: React.FC = () => {
     historicalData, 
     liveCandle,
     orderbookData,
+    indicatorsData,
     fetchMarkets, 
     watchOhlcv,
     watchOrderbook
-  } = useChartWebSocket();
+  } = useChartWebSocket(selectedIndicators);
 
   const [wallThreshold, setWallThreshold] = useState<number>(500);
   const [volumeType, setVolumeType] = useState<'base' | 'quote'>('base');
@@ -88,6 +90,8 @@ export const HFTradingBot: React.FC = () => {
             setWallThreshold={setWallThreshold}
             volumeType={volumeType}
             setVolumeType={setVolumeType}
+            selectedIndicators={selectedIndicators}
+            onIndicatorsChange={setSelectedIndicators}
           />
         </div>
 
@@ -103,6 +107,7 @@ export const HFTradingBot: React.FC = () => {
              orderbookData={orderbookData}
              wallThreshold={wallThreshold}
              volumeType={volumeType}
+             indicatorsData={indicatorsData}
            />
         </div>
       </div>

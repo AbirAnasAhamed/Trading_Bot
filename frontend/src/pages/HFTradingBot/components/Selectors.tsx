@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, ChevronRight, ChevronLeft, ChevronDown } from 'lucide-react';
 import { MarketSelectorModal } from './MarketSelectorModal';
+import { IndicatorsSelector } from './IndicatorsSelector';
 
 interface SelectorsProps {
   exchanges: string[];
@@ -15,6 +16,8 @@ interface SelectorsProps {
   setWallThreshold?: (val: number) => void;
   volumeType?: 'base' | 'quote';
   setVolumeType?: (type: 'base' | 'quote') => void;
+  selectedIndicators: string[];
+  onIndicatorsChange: (indicators: string[]) => void;
 }
 
 const timeframes = ['1s', '1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
@@ -33,7 +36,9 @@ export const Selectors: React.FC<SelectorsProps> = ({
   wallThreshold = 500,
   setWallThreshold,
   volumeType = 'base',
-  setVolumeType
+  setVolumeType,
+  selectedIndicators,
+  onIndicatorsChange
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSliderExpanded, setIsSliderExpanded] = useState(false);
@@ -211,6 +216,12 @@ export const Selectors: React.FC<SelectorsProps> = ({
             </div>
           </div>
         )}
+
+        {/* Indicators Selector */}
+        <IndicatorsSelector 
+          selectedIndicators={selectedIndicators}
+          onIndicatorsChange={onIndicatorsChange}
+        />
         </div>
 
         {/* Divider */}

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, CandlestickSeries } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi, CandlestickData, IPriceLine } from 'lightweight-charts';
+import { useChartIndicators } from '../hooks/useChartIndicators';
 
 interface ChartContainerProps {
   historicalData: CandlestickData[];
@@ -8,6 +9,7 @@ interface ChartContainerProps {
   orderbookData?: { bids: number[][]; asks: number[][] };
   wallThreshold?: number;
   volumeType?: 'base' | 'quote';
+  indicatorsData?: any;
 }
 
 // Utility to format large volumes nicely
@@ -26,14 +28,18 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   liveCandle, 
   orderbookData,
   wallThreshold = 500,
-  volumeType = 'base'
+  volumeType = 'base',
+  indicatorsData = {}
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
+  const [chartInstance, setChartInstance] = React.useState<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   
   // Reference map for all active wall price lines to update/remove them efficiently
   const wallLinesRef = useRef<Map<number, IPriceLine>>(new Map());
+
+  // Handle Indicators rendering
+  useChartIndicators({ chart: chartInstance, indicatorsData, mainSeries: seriesRef.current });
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -66,7 +72,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       wickDownColor: '#ef4444',
     });
 
-    chartRef.current = chart;
+    setChartInstance(chart);
     seriesRef.current = candlestickSeries;
 
     // Handle resize using ResizeObserver for dynamic layout changes
@@ -92,34 +98,43 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     if (seriesRef.current && historicalData.length > 0) {
       // Sort to ensure time is strictly ascending, lightweight-charts requires this
       const sorted = [...historicalData].sort((a, b) => (a.time as number) - (b.time as number));
-      seriesRef.current.setData(sorted);
-
-      // Dynamic precision based on first candle's close price
-      const firstClose = sorted[0].close;
-      let precision = 2;
-      let minMove = 0.01;
       
-      if (firstClose < 0.000001) {
-        precision = 10;
-        minMove = 0.0000000001;
-      } else if (firstClose < 0.0001) {
-        precision = 8;
-        minMove = 0.00000001;
-      } else if (firstClose < 1) {
-        precision = 6;
-        minMove = 0.000001;
-      } else if (firstClose < 10) {
-        precision = 4;
-        minMove = 0.0001;
-      }
+      // Prevent chart blinking when indicators change by checking if data is actually new
+      const existingData = seriesRef.current.data();
+      const isNewData = existingData.length === 0 || 
+                        existingData[0].time !== sorted[0].time || 
+                        (existingData[0] as CandlestickData).close !== sorted[0].close;
 
-      seriesRef.current.applyOptions({
-        priceFormat: {
-          type: 'price',
-          precision: precision,
-          minMove: minMove,
+      if (isNewData) {
+        seriesRef.current.setData(sorted);
+
+        // Dynamic precision based on first candle's close price
+        const firstClose = sorted[0].close;
+        let precision = 2;
+        let minMove = 0.01;
+        
+        if (firstClose < 0.000001) {
+          precision = 10;
+          minMove = 0.0000000001;
+        } else if (firstClose < 0.0001) {
+          precision = 8;
+          minMove = 0.00000001;
+        } else if (firstClose < 1) {
+          precision = 6;
+          minMove = 0.000001;
+        } else if (firstClose < 10) {
+          precision = 4;
+          minMove = 0.0001;
         }
-      });
+
+        seriesRef.current.applyOptions({
+          priceFormat: {
+            type: 'price',
+            precision: precision,
+            minMove: minMove,
+          }
+        });
+      }
     }
   }, [historicalData]);
 
@@ -198,5 +213,22 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     }
   }, [orderbookData, wallThreshold, volumeType]);
 
-  return <div ref={chartContainerRef} className="absolute inset-0" />;
+  const errorMessages = Object.entries(indicatorsData || {})
+    .filter(([k, v]) => k.endsWith('_error') && v)
+    .map(([, v]) => v as string);
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={chartContainerRef} className="absolute inset-0" />
+      {errorMessages.length > 0 && (
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
+          {errorMessages.map((msg, idx) => (
+            <div key={idx} className="bg-red-500/80 backdrop-blur text-white px-3 py-1.5 rounded text-sm shadow-md">
+              {msg}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
