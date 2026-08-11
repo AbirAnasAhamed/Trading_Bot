@@ -2,23 +2,22 @@ import { useState } from 'react';
 import { Activity, Shield, Zap, ChevronRight, BarChart3 } from 'lucide-react';
 import { LoginModal } from './LoginModal';
 import { RegisterModal } from './RegisterModal';
+import CosmicBackground from '../../components/CosmicBackground';
 
 export const Landing = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden relative">
+    <div className="min-h-screen bg-black text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden relative">
       
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-600/10 blur-[120px]" />
-        <div className="absolute top-[20%] -right-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[120px]" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-600/10 blur-[100px]" />
-      </div>
+      {/* Cosmic Space Background */}
+      <CosmicBackground />
+
+      {/* Dynamic Background Removed for Pure Black Effect */}
 
       {/* Navbar */}
-      <nav className="relative z-10 border-b border-slate-800/50 bg-[#0F172A]/50 backdrop-blur-md sticky top-0">
+      <nav className="relative z-10 border-b border-slate-800/50 bg-black/50 backdrop-blur-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
