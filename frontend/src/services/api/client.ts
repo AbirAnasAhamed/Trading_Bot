@@ -5,7 +5,7 @@ export const apiClient = async <T>(
   endpoint: string, 
   options: RequestInit = {}
 ): Promise<T> => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

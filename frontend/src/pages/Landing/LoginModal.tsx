@@ -9,6 +9,7 @@ export const LoginModal = ({ onClose, onSwitchToRegister }: { onClose: () => voi
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -19,7 +20,7 @@ export const LoginModal = ({ onClose, onSwitchToRegister }: { onClose: () => voi
 
     try {
       const data = await authService.login({ email, password });
-      await login(data.access_token);
+      await login(data.access_token, rememberMe);
       navigate('/dashboard'); // Redirect to dashboard
     } catch (err: any) {
       setError(err.message);
@@ -84,6 +85,19 @@ export const LoginModal = ({ onClose, onSwitchToRegister }: { onClose: () => voi
                 placeholder="••••••••"
               />
             </div>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-[#0F172A] border-slate-700 rounded focus:ring-blue-500 focus:ring-2"
+            />
+            <label htmlFor="rememberMe" className="ml-2 text-sm font-medium text-slate-300">
+              Remember me
+            </label>
           </div>
 
           <button 

@@ -76,7 +76,7 @@ export const Topbar: React.FC = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (user?.notifications_enabled && token) {
       loadNotifications();
       
