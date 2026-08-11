@@ -166,7 +166,12 @@ async def chart_stream(websocket: WebSocket):
                                         
                                 if "Liquidation Levels" in indicators:
                                     try:
-                                        if ex.has.get('fetchLiquidations') or hasattr(ex, 'fetch_liquidations'):
+                                        if exchange_id in ['binance', 'binanceusdm']:
+                                            # Binance has permanently removed the REST endpoint for historical liquidations
+                                            # (/fapi/v1/allForceOrders). They only provide live data via WebSocket now.
+                                            extra_data["Liquidation Levels"] = []
+                                            extra_data["Liquidation Levels_error"] = "Historical liquidations are no longer supported by Binance API"
+                                        elif ex.has.get('fetchLiquidations'):
                                             try:
                                                 liqs = await ex.fetch_liquidations(symbol)
                                                 levels = []
@@ -179,10 +184,13 @@ async def chart_stream(websocket: WebSocket):
                                                 extra_data["Liquidation Levels"] = levels
                                                 extra_data["Liquidation Levels_error"] = None
                                             except Exception as e:
+                                                logger.error(f"[CCXT Liq] Error: {type(e).__name__} - {str(e)}")
                                                 extra_data["Liquidation Levels_error"] = f"Liq API Error: {str(e)}"
                                         else:
+                                            extra_data["Liquidation Levels"] = []
                                             extra_data["Liquidation Levels_error"] = f"Liquidations not available for {exchange_id.upper()}"
                                     except Exception as e:
+                                        logger.error(f"[Extra Liq] Generic Error: {type(e).__name__} - {str(e)}")
                                         extra_data["Liquidation Levels_error"] = f"Liq Error: {str(e)}"
                                         
                                 if extra_data:
