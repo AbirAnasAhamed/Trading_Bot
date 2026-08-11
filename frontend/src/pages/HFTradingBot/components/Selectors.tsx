@@ -42,8 +42,6 @@ export const Selectors: React.FC<SelectorsProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSliderExpanded, setIsSliderExpanded] = useState(false);
-  const [isMarketExpanded, setIsMarketExpanded] = useState(false);
-  const [isTimeframeExpanded, setIsTimeframeExpanded] = useState(false);
   const [isTimeframeDropdownOpen, setIsTimeframeDropdownOpen] = useState(false);
   const timeframeDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -62,21 +60,8 @@ export const Selectors: React.FC<SelectorsProps> = ({
         {/* Top Part: Current Selectors */}
         <div className="flex flex-col md:flex-row gap-2">
           {/* Market Selector Pill */}
-        <div className={`flex items-center bg-panel border border-panel rounded-xl px-3 py-1 gap-3 transition-all duration-300 w-auto`}>
-          <span className="text-secondary font-bold text-sm whitespace-nowrap">
-            Market: <span className="text-primary">{selectedSymbol || 'Select'}</span>
-          </span>
-          <button
-            onClick={() => setIsMarketExpanded(!isMarketExpanded)}
-            className="p-1 rounded-full hover:bg-primary text-secondary hover:text-blue-500 transition-colors flex items-center justify-center"
-            title={isMarketExpanded ? "Collapse Market Selector" : "Expand Market Selector"}
-          >
-            {isMarketExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </button>
-          
-          <div className={`flex items-center transition-all duration-500 ease-in-out overflow-hidden ${
-            isMarketExpanded ? 'max-w-[400px] opacity-100 ml-2 flex-1' : 'max-w-0 opacity-0 ml-0 flex-none'
-          }`}>
+        <div className={`flex items-center bg-panel border border-panel rounded-xl p-1 transition-all duration-300 w-auto`}>
+          <div className="flex items-center flex-1">
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex flex-col justify-center bg-primary border border-panel rounded-lg px-4 py-1 hover:border-blue-500 transition-colors group shrink-0 min-w-[150px]"
@@ -95,21 +80,8 @@ export const Selectors: React.FC<SelectorsProps> = ({
         </div>
 
         {/* Timeframe Selector Pill */}
-        <div className={`flex items-center bg-panel border border-panel rounded-xl px-3 py-1 gap-3 transition-all duration-300 w-auto`}>
-          <span className="text-secondary font-bold text-sm whitespace-nowrap">
-            TF: <span className="text-primary">{selectedTimeframe}</span>
-          </span>
-          <button
-            onClick={() => setIsTimeframeExpanded(!isTimeframeExpanded)}
-            className="p-1 rounded-full hover:bg-primary text-secondary hover:text-blue-500 transition-colors flex items-center justify-center"
-            title={isTimeframeExpanded ? "Collapse Timeframe Selector" : "Expand Timeframe Selector"}
-          >
-            {isTimeframeExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </button>
-          
-          <div className={`flex items-center transition-all duration-500 ease-in-out ${
-            isTimeframeExpanded ? 'max-w-[400px] opacity-100 ml-2 flex-1' : 'max-w-0 opacity-0 ml-0 flex-none pointer-events-none'
-          }`}>
+        <div className={`flex items-center bg-panel border border-panel rounded-xl p-1 transition-all duration-300 w-auto`}>
+          <div className="flex items-center flex-1">
             <div className="flex bg-primary border border-panel rounded-lg focus-within:border-blue-500 transition-colors shrink-0">
               <div className="relative" ref={timeframeDropdownRef}>
                 <button
