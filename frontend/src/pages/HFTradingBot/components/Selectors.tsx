@@ -56,9 +56,9 @@ export const Selectors: React.FC<SelectorsProps> = ({
   }, []);
   return (
     <>
-      <div className="flex flex-col gap-1 mb-1">
+      <div className="flex flex-col gap-1 mb-2">
         {/* Top Part: Current Selectors */}
-        <div className="flex flex-col md:flex-row gap-2">
+        <div className="flex flex-row flex-wrap gap-2 items-center">
           {/* Market Selector Pill */}
         <div className={`flex items-center bg-panel border border-panel rounded-xl p-1 transition-all duration-300 w-auto`}>
           <div className="flex items-center flex-1">

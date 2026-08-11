@@ -1,119 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Selectors } from './components/Selectors';
-import { ChartContainer } from './components/ChartContainer';
-import { OrderbookPopup } from './components/OrderbookPopup';
-import { useChartWebSocket } from './hooks/useChartWebSocket';
-
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { SingleChartWidget } from './components/SingleChartWidget';
+import { Plus } from 'lucide-react';
 
 export const HFTradingBot: React.FC = () => {
-  const [selectedExchange, setSelectedExchange] = useState<string>('binance');
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC/USDT');
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('3m');
-  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
-  const [isSelectorsVisible, setIsSelectorsVisible] = useState<boolean>(true);
-  const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
-  
-  const { 
-    isConnected, 
-    exchanges, 
-    markets, 
-    historicalData, 
-    liveCandle,
-    orderbookData,
-    indicatorsData,
-    fetchMarkets, 
-    watchOhlcv,
-    watchOrderbook
-  } = useChartWebSocket(selectedIndicators);
+  const [charts, setCharts] = useState<{ id: string }[]>([{ id: '1' }]);
+  const [topbarElement, setTopbarElement] = useState<HTMLElement | null>(null);
 
-  const [wallThreshold, setWallThreshold] = useState<number>(500);
-  const [volumeType, setVolumeType] = useState<'base' | 'quote'>('base');
-
-  // Fetch markets when exchange changes
   useEffect(() => {
-    if (selectedExchange) {
-      fetchMarkets(selectedExchange);
-      if (!isInitialLoad) {
-        setSelectedSymbol(''); // Reset symbol only if it's not the initial load
-      }
-      setIsInitialLoad(false);
+    setTopbarElement(document.getElementById('topbar-ws-indicator'));
+  }, []);
+
+  const addChart = () => {
+    if (charts.length < 4) {
+      setCharts([...charts, { id: Math.random().toString(36).substring(7) }]);
     }
-  }, [selectedExchange, fetchMarkets]);
+  };
 
-  // Watch OHLCV and Orderbook when all three are selected
-  useEffect(() => {
-    if (selectedExchange && selectedSymbol && selectedTimeframe) {
-      watchOhlcv(selectedExchange, selectedSymbol, selectedTimeframe);
-      watchOrderbook(selectedExchange, selectedSymbol);
+  const removeChart = (id: string) => {
+    setCharts(charts.filter(chart => chart.id !== id));
+  };
+
+  const getGridClass = () => {
+    switch (charts.length) {
+      case 1:
+        return 'grid-cols-1 grid-rows-1';
+      case 2:
+        return 'grid-cols-1 grid-rows-2 lg:grid-cols-2 lg:grid-rows-1';
+      case 3:
+      case 4:
+        return 'grid-cols-1 grid-rows-4 lg:grid-cols-2 lg:grid-rows-2';
+      default:
+        return 'grid-cols-1 grid-rows-1';
     }
-  }, [selectedExchange, selectedSymbol, selectedTimeframe, watchOhlcv, watchOrderbook]);
+  };
 
-  const topbarElement = document.getElementById('topbar-ws-indicator');
-
-  const wsIndicator = (
-    <div className="flex items-center mr-2">
-      <span className={`w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
-      <span className="text-sm font-medium text-secondary whitespace-nowrap">{isConnected ? 'WS Connected' : 'WS Disconnected'}</span>
+  const topbarContent = (
+    <div className="flex items-center">
+      <button
+        onClick={addChart}
+        disabled={charts.length >= 4}
+        className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-colors text-sm ${
+          charts.length >= 4 
+            ? 'bg-panel text-gray-500 cursor-not-allowed border border-panel' 
+            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20'
+        }`}
+      >
+        <Plus size={16} />
+        <span>Add Chart ({charts.length}/4)</span>
+      </button>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-full relative">
-      {topbarElement && createPortal(wsIndicator, topbarElement)}
+    <div className="flex flex-col h-full relative p-2 bg-background">
+      {topbarElement && createPortal(topbarContent, topbarElement)}
 
-      <div className="bg-panel border border-panel rounded-xl p-6 pt-3 shadow-sm flex flex-col flex-1 relative">
-        <button 
-          onClick={() => setIsSelectorsVisible(!isSelectorsVisible)}
-          className="absolute top-2 right-2 p-1.5 bg-background border border-panel rounded-lg text-gray-500 hover:text-white transition-colors z-20 hover:border-blue-500"
-          title={isSelectorsVisible ? "Hide Controls" : "Show Controls"}
-        >
-          {isSelectorsVisible ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        <div 
-          className={`relative z-50 flex justify-start items-end pr-10 transition-all duration-500 ease-in-out ${
-            isSelectorsVisible ? 'max-h-[500px] opacity-100 mb-1 overflow-visible' : 'max-h-0 opacity-0 mb-0 pointer-events-none overflow-hidden'
-          }`}
-        >
-          <Selectors 
-            exchanges={exchanges}
-            markets={markets}
-            selectedExchange={selectedExchange}
-            selectedSymbol={selectedSymbol}
-            selectedTimeframe={selectedTimeframe}
-            onExchangeChange={setSelectedExchange}
-            onSymbolChange={setSelectedSymbol}
-            onTimeframeChange={setSelectedTimeframe}
-            wallThreshold={wallThreshold}
-            setWallThreshold={setWallThreshold}
-            volumeType={volumeType}
-            setVolumeType={setVolumeType}
-            selectedIndicators={selectedIndicators}
-            onIndicatorsChange={setSelectedIndicators}
-          />
-        </div>
-
-        <div className="flex-1 bg-background border border-panel rounded-lg overflow-hidden relative">
-           {historicalData.length === 0 && selectedSymbol ? (
-             <div className="absolute inset-0 flex items-center justify-center text-secondary z-10 bg-background/80">
-               Loading chart data for {selectedSymbol}...
-             </div>
-           ) : null}
-           <ChartContainer 
-             historicalData={historicalData} 
-             liveCandle={liveCandle}
-             orderbookData={orderbookData}
-             wallThreshold={wallThreshold}
-             volumeType={volumeType}
-             indicatorsData={indicatorsData}
-           />
-        </div>
+      <div className={`grid gap-2 flex-1 min-h-0 overflow-y-auto ${getGridClass()}`}>
+        {charts.map(chart => (
+          <div key={chart.id} className="min-h-[400px] lg:min-h-0 lg:h-full w-full">
+            <SingleChartWidget 
+              id={chart.id} 
+              onClose={charts.length > 1 ? removeChart : undefined} 
+              showClose={charts.length > 1}
+            />
+          </div>
+        ))}
       </div>
-      
-      {/* Floating Orderbook Component */}
-      <OrderbookPopup orderbookData={orderbookData} symbol={selectedSymbol} />
     </div>
   );
 };

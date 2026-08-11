@@ -33,7 +33,7 @@ export const OrderbookPopup: React.FC<OrderbookPopupProps> = ({ orderbookData, s
       )}
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+      <div className="absolute bottom-6 right-6 z-50 flex items-center gap-3">
         <button
           onClick={() => setIsDeployModalOpen(true)}
           className="w-14 h-14 rounded-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all duration-300 group"
